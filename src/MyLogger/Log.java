@@ -6,7 +6,7 @@ package MyLogger;
 
 import java.io.PrintWriter;
 /**
- *
+ * TEST
  * @author sanker
  */
 public class Log {
