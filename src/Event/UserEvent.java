@@ -26,7 +26,10 @@ public class UserEvent extends  Event {
         this.userName=e.userName;
     }
     
-  
+    public String getUserName()
+    {
+        return this.userName;
+    }
     
     public static enum UserEventType
     {
