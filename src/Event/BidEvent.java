@@ -33,6 +33,21 @@ public class BidEvent extends  Event {
         this.auctionID=e.auctionID;
     }
     
+    public String getUserName()
+    {
+        return this.userName;
+    }
+    
+    public long getAuctionID()
+    {
+        return this.auctionID;
+    }
+    
+    public double getPrice()
+    {
+        return this.price;
+    }
+    
   
     
     public static enum BidEventType

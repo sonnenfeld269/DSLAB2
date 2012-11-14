@@ -38,6 +38,11 @@ public class StatisticsEvent extends  Event {
         AUCTION_TIME_AVG,
         AUCTION_SUCCESS_RATIO
     }
+    
+    public double getTypeValue()
+    {
+        return this.value;
+    }
 
    
 }
