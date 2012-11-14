@@ -9,13 +9,12 @@ package Event;
  * @author Marko
  */
 public class AuctionEvent extends  Event {
-    private static long counter=0; 
     private long auctionID=0;
     
-    public AuctionEvent(AuctionEvent.AuctionType type)
+    public AuctionEvent(AuctionEvent.AuctionType type,long auctionID)
     {
         super(type.name());
-        this.auctionID=AuctionEvent.getNextCount();
+        this.auctionID=auctionID;
         
     }
   
@@ -25,15 +24,17 @@ public class AuctionEvent extends  Event {
         this.auctionID=e.auctionID;
     }
     
+    public long getAuctionID()
+    {
+        return this.auctionID;
+    }
+    
     public static enum AuctionType
     {
         AUCTION_STARTED,
         AUCTION_ENDED
     }
 
-    synchronized private static long getNextCount()
-    {
-        return counter++;
-    }
+    
 }
 
