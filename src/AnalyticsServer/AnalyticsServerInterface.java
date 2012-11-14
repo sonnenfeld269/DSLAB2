@@ -4,6 +4,7 @@
  */
 package AnalyticsServer;
 
+import Event.Event;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -14,6 +15,6 @@ import java.rmi.RemoteException;
 public interface AnalyticsServerInterface extends Remote{
     
     public void subscribe() throws RemoteException;
-    public void processEvents() throws RemoteException;
+    public void processEvents(Event e) throws RemoteException;
     public void unsubscribe() throws RemoteException;
 }
