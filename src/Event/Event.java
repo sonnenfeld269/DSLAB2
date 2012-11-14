@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 package Event;
+import java.io.Serializable;
 import java.util.Date;
 
 
@@ -10,7 +11,7 @@ import java.util.Date;
  *
  * @author Marko
  */
-public class Event {
+public class Event implements Serializable{
    
     private String ID=null;
     private String type=null;
