@@ -13,9 +13,9 @@ import java.util.Calendar;
  * @author sanker
  */
 public class Auction {
-    private static int counter=0;
+    private static long counter=0;
     
-    private int id=0;
+    private long id=0;
     private String description=null;
     private String owner=null;
     private long duration=0;//auctions ends in duration seconds
@@ -35,7 +35,7 @@ public class Auction {
         highest_bidder=new String("none");
     }
     
-    public int getID() 
+    public long getID() 
     {
         return this.id;
     }
@@ -70,7 +70,7 @@ public class Auction {
         return this.owner;
     }
     
-    public synchronized int getNewAuctionID()
+    public synchronized long getNewAuctionID()
     {
       return Auction.counter++;  
     }

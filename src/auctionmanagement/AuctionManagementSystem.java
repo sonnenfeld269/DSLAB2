@@ -21,13 +21,25 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TimerTask;
 
+import Event.*;
+
+/*********** RMI *******************************/
+import AnalyticsServer.AnalyticsServerInterface;
+import java.rmi.AccessException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+/*********** RMI *******************************/
 
 
 public class AuctionManagementSystem implements Runnable{
 
     private  LinkedBlockingQueue<CommandTask> incomingrequest=null;
     private  ConcurrentHashMap<String,Account> account_map=null;
-    private  ConcurrentHashMap<Integer,Auction> auction_map=null;
+    private  ConcurrentHashMap<Long,Auction> auction_map=null;
     private  Timer timer=null;
     private LinkedBlockingQueue<Answer> outgoingmessagechannel = null;
     private AuctionTCPMessageServer outgoingMessageServer =null;
@@ -35,14 +47,20 @@ public class AuctionManagementSystem implements Runnable{
     private LinkedBlockingQueue<Notification> notificationchannel=null;
     private final ExecutorService pool;
     private Log logger=null;
-    
+    /*********** RMI *******************************/
+    private final String HOST = "localhost";
+    private final int PORT = 1099;
+    private Registry registry=null;
+    private boolean rmiAvailability=false;
+    private AnalyticsServerInterface analytic=null;
+    /*********** RMI *******************************/
     private CommandTask readRequest()
     {
         CommandTask r =null;
         try {
             r=incomingrequest.take();
         } catch (InterruptedException ex) {
-            
+           
         }
         return r;
     }
@@ -50,13 +68,13 @@ public class AuctionManagementSystem implements Runnable{
     
     
     //public ----------------------------------------- 
-    public AuctionManagementSystem(LinkedBlockingQueue<CommandTask> incomingrequest, ExecutorService pool,Log output)
+    public AuctionManagementSystem(LinkedBlockingQueue<CommandTask> incomingrequest, ExecutorService pool,Log output) 
     {
         this.pool=pool;
         this.logger=output;
         this.incomingrequest = incomingrequest;
         this.account_map=new ConcurrentHashMap<String,Account>();
-        this.auction_map=new ConcurrentHashMap<Integer,Auction>();
+        this.auction_map=new ConcurrentHashMap<Long,Auction>();
         this.timer = new Timer(true);
         this.notificationchannel = new LinkedBlockingQueue<Notification>();
         //this.NotificationServer = new AuctionUDPMessageServer(notificationchannel,this.logger);
@@ -66,6 +84,25 @@ public class AuctionManagementSystem implements Runnable{
         //this.pool.execute(NotificationServer);
         this.pool.execute(outgoingMessageServer);
         this.logger.output("AuctionManagementSystem created...", 2);
+        try {
+            /*
+             * ***************RMI**********************
+             */
+             this.registry = LocateRegistry.getRegistry(HOST, PORT);
+             analytic = (AnalyticsServerInterface) registry.lookup(AnalyticsServerInterface.class.getSimpleName());
+             rmiAvailability=true;
+             /*
+             * ***************RMI**********************
+             */
+        } catch (RemoteException ex) {
+           this.logger.output("AuctionManagementSystem:RMI:Error:"+ex.getMessage(), 2);
+        }catch(NotBoundException ex)
+        {
+          this.logger.output("AuctionManagementSystem:RMI:Error:"+ex.getMessage(), 2);
+        }
+        
+        
+        
     }
     //returns true if the queue had enogh space 
    
@@ -107,15 +144,15 @@ public class AuctionManagementSystem implements Runnable{
     
     
     public class Task extends TimerTask{
-        private Integer auction_id;
+        private Long auction_id;
         private Auction auc=null;
         private Account owner=null;
         private Account bidder=null;
         private Log error=null;
      
-        public Task(int auction_id,Log error)
+        public Task(long auction_id,Log error)
         {
-           this.auction_id=new Integer(auction_id);
+           this.auction_id=new Long(auction_id);
            this.error=error;
           // account_map
                         
@@ -134,6 +171,44 @@ public class AuctionManagementSystem implements Runnable{
                 bidder=null;
             else
                 bidder=account_map.get(this.auc.getHighestBidder());
+            
+              /*********** RMI *******************************/
+            
+            if(rmiAvailability)
+            {
+                try {
+                    analytic.processEvents(
+                        new AuctionEvent(AuctionEvent.AuctionType.AUCTION_ENDED,
+                            auc.getID())
+                        );
+                    logger.output("TimerTask:RMI"+
+                    ":processEvent:Invoke::"
+                        + "AuctionID:"+auc.getID()+"\n"
+                        + "Type:AUCTION_ENDED",3);
+                    if(bidder!=null)
+                    {
+                        analytic.processEvents(
+                            new BidEvent(bidder.getName(),
+                                auc.getID(),
+                                auc.getHighestBid(),
+                                BidEvent.BidEventType.BID_WON)
+                            );
+                        logger.output("TimerTask:RMI"+
+                            ":processEvent:Invoke::"
+                                + "AuctionID:"+auc.getID()
+                                +"\nUser:"+auc.getHighestBidder()
+                                +"\nPrice:"+auc.getHighestBid()
+                                +"\nType:BID_WON",3);
+                    }
+
+                } catch (RemoteException ex) {
+                    logger.output("TimerTaskHandle:RemoteException:"+ex.getMessage(), 2);
+                }
+                
+            }
+             /*********** RMI *******************************/                
+            
+          
             //Notification notificationOwner=null;
             //Notification notificationBidder=null;
                     
@@ -212,11 +287,11 @@ public class AuctionManagementSystem implements Runnable{
             {
               try{
                 StringBuffer list=new StringBuffer();
-                Iterator<Map.Entry<Integer,Auction>> iterator =auction_map.entrySet().iterator();
+                Iterator<Map.Entry<Long,Auction>> iterator =auction_map.entrySet().iterator();
                 if(iterator.hasNext()){//if no auction entry avaible, no sending
                     while(iterator.hasNext())
                     {
-                        Map.Entry<Integer,Auction> entry = iterator.next(); 
+                        Map.Entry<Long,Auction> entry = iterator.next(); 
                         list.append(entry.getKey().toString()+"."+" '"
                                 +entry.getValue().getDescription()+"' "
                                 +entry.getValue().getOwner()+" "
@@ -233,7 +308,6 @@ public class AuctionManagementSystem implements Runnable{
               }catch(Exception e){
                   logger.output("AMSHandlerThread:list:Exception:"+e.getMessage());
               }
-              
    
             }else  if(this.commandtask.login!=null)
             {
@@ -255,6 +329,27 @@ public class AuctionManagementSystem implements Runnable{
                             outgoingmessagechannel.offer(a);
                             logger.output("AMSHandlerThread:login finished:"+
                                     "user "+commandtask.login.user, 3);
+                           
+                            /*********** RMI *******************************/
+                            if(rmiAvailability)
+                            {
+                                try{
+                                    analytic.processEvents(
+                                        new UserEvent(commandtask.login.user,
+                                            UserEvent.UserEventType.USER_LOGIN)
+                                        );
+                                    logger.output("AMSHandlerThread:login:RMI"+
+                                        ":processEvent:Invoke::"
+                                            + "\nUser:"+commandtask.login.user,3);
+                                }catch(RemoteException e)
+                                {
+                                    logger.output("AMS_HandlerThread:login:RemoteException"
+                                            +":"+e.getMessage(), 2);
+                                }
+                            }
+                            
+                            /*********** RMI *******************************/
+                            
                         }
                     }
                 }else{   
@@ -271,6 +366,25 @@ public class AuctionManagementSystem implements Runnable{
                         outgoingmessagechannel.offer(a);
                         logger.output("AMSHandlerThread:login finished:"+
                                     "user "+commandtask.login.client, 3);
+                        /*********** RMI *******************************/
+                            if(rmiAvailability)
+                            {
+                                try{
+                                    analytic.processEvents(
+                                        new UserEvent(commandtask.login.user,
+                                            UserEvent.UserEventType.USER_LOGIN)
+                                        );
+                                    logger.output("AMSHandlerThread:login:RMI"+
+                                        ":processEvent:Invoke::"
+                                            + "\nUser:"+commandtask.login.user,3);
+                                }catch(RemoteException e)
+                                {
+                                    logger.output("AMS_HandlerThread:login:RemoteException"
+                                            +":"+e.getMessage(), 2);
+                                }
+                            }
+                            
+                         /*********** RMI *******************************/
                     }
                 }
                 }catch(AccountException e){
@@ -293,6 +407,31 @@ public class AuctionManagementSystem implements Runnable{
                                 +" "+commandtask.logout.user+"!");
                             Answer a = new Answer(answer,commandtask.logout.client);
                             outgoingmessagechannel.offer(a);
+                            
+                            /*********** RMI *******************************/
+                            if(rmiAvailability)
+                            {
+                                try{
+                                    analytic.processEvents(
+                                        new UserEvent(commandtask.login.user,
+                                            UserEvent.UserEventType.USER_LOGOUT)
+                                        );
+                                    logger.output("AMSHandlerThread:logout:RMI"+
+                                        ":processEvent:Invoke::"
+                                            + "User:"+commandtask.login.user,3);
+                                }catch(RemoteException e)
+                                {
+                                    logger.output("AMS_HandlerThread:logout:RemoteException:"
+                                            +e.getMessage(), 2);
+                                }
+                            }
+                            
+                         /*********** RMI *******************************/
+                            
+                            
+                            
+                            
+                            
                         }else throw new Exception("Could not deactivate User!");
                     }else throw new Exception("Didn't find user!");
                 }catch(Exception e){
@@ -308,7 +447,7 @@ public class AuctionManagementSystem implements Runnable{
                 {
                     Auction auc = new Auction(commandtask.create.user,
                             commandtask.create.expire,commandtask.create.description);
-                   auction_map.put((new Integer(auc.getID())), auc) ;
+                   auction_map.put((new Long(auc.getID())), auc) ;
                    timer.schedule( (new Task(auc.getID(),logger)) ,(auc.getPeriodofTime()*1000));
                    String answer=new String("An auction"+" '"
                            +auc.getDescription()+"' "+"with id"+" "
@@ -316,6 +455,29 @@ public class AuctionManagementSystem implements Runnable{
                            +auc.getEndDate()+".");
                     Answer a = new Answer(answer,commandtask.create.client);
                     outgoingmessagechannel.offer(a);
+                    
+                    /*********** RMI *******************************/
+                            if(rmiAvailability)
+                            {
+                                try{
+                                    analytic.processEvents(
+                                        new AuctionEvent(AuctionEvent.AuctionType.AUCTION_STARTED,
+                                            auc.getID())
+                                        );
+                                    logger.output("AMSHandlerThread:create:RMI"+
+                                        ":processEvent:Invoke::"
+                                            + "AuctionID:"+auc.getID(),3);
+                                 }catch(RemoteException e)
+                                {
+                                    logger.output("AMS_HandlerThread:create:RemoteException"
+                                            +":"+e.getMessage(), 2);
+                                }
+                            }
+                            
+                         /*********** RMI *******************************/
+                    
+
+                    
                 }
               }catch(Exception e){
                   logger.output("AMSHandlerThread:create:Exception:"+e.getMessage());
@@ -326,10 +488,10 @@ public class AuctionManagementSystem implements Runnable{
             }else  if(this.commandtask.bid!=null)
             {
 
-        Auction auc=null;
+                Auction auc=null;
                 try{
                     logger.output("AMSHandlerThread:Bid:start",2);
-                    Integer id = new Integer(commandtask.bid.id);
+                    Long id = new Long(commandtask.bid.id);
                     if((auc = auction_map.get(id))==null)
                     {
                         throw new Exception("No Auction with id "+id.toString()+" found.");
@@ -360,20 +522,79 @@ public class AuctionManagementSystem implements Runnable{
                         
                         Answer a = new Answer(ans,commandtask.bid.client);
                         outgoingmessagechannel.offer(a);
-                        /*
+                        
+                        /*********** RMI *******************************/
+                            if(rmiAvailability)
+                            {
+                                try{
+                                    analytic.processEvents(
+                                        new BidEvent(auc.getHighestBidder(),
+                                            auc.getID(),auc.getHighestBid(),
+                                            BidEvent.BidEventType.BID_PLACED)
+                                        );
+                                    logger.output("AMSHandlerThread:bid:RMI"+
+                                        ":processEvent:Invoke::"
+                                            + "AuctionID:"+auc.getID()
+                                            +"\nUser:"+auc.getHighestBidder()
+                                            +"\nPrice:"+auc.getHighestBid()
+                                            +"\nType:BID_PLACED",3);
+                                 }catch(RemoteException e)
+                                {
+                                    logger.output("AMS_HandlerThread:bid:RemoteException"
+                                            +":"+e.getMessage(), 2);
+                                }
+                            }
+                            
+                         /*********** RMI *******************************/
+                        
+                        
+                        
                         if(oldBidder!=null)
                         {
+                            /*
                             if(oldBidder.getClient()!=null)
                             {
+                                
                                 Notification n = new Notification(not,oldBidder.getClientUDP());
                                 notificationchannel.offer(n);
                                 logger.output("AMSHandlerThread:Bid:Notification send to user"+oldBidder.getName(),3);
+                                
+                                
                             }else
                             {
                                 oldBidder.addNotification(not);
                                  logger.output("AMSHandlerThread:Bid:Notification store for user"+oldBidder.getName(),3);
                             }
-                        }*/
+                            */
+                            
+                            /*********** RMI *******************************/
+                            if(rmiAvailability)
+                            {
+                                try{
+                                    analytic.processEvents(
+                                        new BidEvent(oldBidder.getName(),
+                                            auc.getID(),
+                                            auc.getHighestBid(),
+                                            BidEvent.BidEventType.BID_OVERBID)
+                                        );
+                                    logger.output("AMSHandlerThread:bid:RMI"+
+                                        ":processEvent:Invoke::"
+                                            + "AuctionID:"+auc.getID()
+                                            +"\nUser:"+auc.getHighestBidder()
+                                            +"\nPrice:"+auc.getHighestBid()
+                                            +"\nType:BID_OVERBID",3);
+                                 }catch(RemoteException e)
+                                {
+                                    logger.output("AMS_HandlerThread:bid:RemoteException"
+                                            +":"+e.getMessage(), 2);
+                                }
+                            }
+                            
+                         /*********** RMI *******************************/
+                            
+                            
+                            
+                        }
                         
                     }else
                     {
