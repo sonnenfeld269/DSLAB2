@@ -46,22 +46,22 @@ public class AuctionClient implements Runnable {
         userstatus=new ClientStatus("none");
         try {
             
-            this.handleUDP=new AuctionClientUDPHandler(output);
+            //this.handleUDP=new AuctionClientUDPHandler(output);
             this.udpPort=udpPort;
             this.clientTCP=new Client(host,tcpPort);
           
             this.handleTCP=new AuctionClientTCPHandler(this.clientTCP,output);
-            this.serverUDP=new ServerUDP(udpPort,handleUDP,output);
+            //this.serverUDP=new ServerUDP(udpPort,handleUDP,output);
            // this.serverUDP.setErrorLog(output);
             pool = Executors.newCachedThreadPool();
-            pool.execute(serverUDP);
+           // pool.execute(serverUDP);
             pool.execute(handleTCP);
             
         } catch (ClientException e) {
            throw (new AuctionClientException(":ClientException:",e));
-        } catch (ServerUDPException e) {
+      }  /* catch (ServerUDPException e) {
            throw (new AuctionClientException(":ServerUDPException:",e));
-        } 
+        } */
     }
     
     public AuctionClient(String host,int tcpPort,int udpPort,ExecutorService pool,Log output) throws AuctionClientException
@@ -70,26 +70,26 @@ public class AuctionClient implements Runnable {
         userstatus=new ClientStatus("none");
         try {
             
-            this.handleUDP=new AuctionClientUDPHandler(output);
+            //this.handleUDP=new AuctionClientUDPHandler(output);
             this.udpPort=udpPort;
             this.clientTCP=new Client(host,tcpPort);
             this.handleTCP=new AuctionClientTCPHandler(this.clientTCP,output);
-            this.serverUDP=new ServerUDP(udpPort,handleUDP,output);
+            //this.serverUDP=new ServerUDP(udpPort,handleUDP,output);
            // this.serverUDP.setErrorLog(output);
             this.pool = pool; 
-            pool.execute(serverUDP);
+            //pool.execute(serverUDP);
             pool.execute(handleTCP);
             
         } catch (ClientException e) {
            throw (new AuctionClientException(":ClientException:",e));
-        } catch (ServerUDPException e) {
+        }/* catch (ServerUDPException e) {
            throw (new AuctionClientException(":ServerUDPException:",e));
-        } 
+        } */
     }
     
     public void run()
     {
-        this.errorlog.output("AuctionClient is tunning..",2);
+        this.errorlog.output("AuctionClient is running..",2);
         Request req=null;
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         

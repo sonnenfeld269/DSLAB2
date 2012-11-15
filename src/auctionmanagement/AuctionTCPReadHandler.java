@@ -20,14 +20,14 @@ public class AuctionTCPReadHandler implements Runnable{
     
     private LinkedBlockingQueue<CommandTask> queue=null;
     private Client client=null;
-    private Log output=null;
+    private Log logger=null;
     
-    public AuctionTCPReadHandler(LinkedBlockingQueue<CommandTask> queue,Client client,Log output)
+    public AuctionTCPReadHandler(LinkedBlockingQueue<CommandTask> queue,Client client,Log logger)
     {
         this.client=client;
         this.queue=queue;
-        this.output=output;
-        output.output("AuctionTCPReadHandler created....", 2);
+        this.logger=logger;
+        logger.output("AuctionTCPReadHandler created....", 2);
     }
     
     
@@ -79,7 +79,7 @@ public class AuctionTCPReadHandler implements Runnable{
         
         public void run()
         {
-            output.output("ServerSocketHandleThread started....", 2);
+            logger.output("ServerSocketHandleThread started....", 2);
             String message=null;
             Operation op=null;
             CommandTask com=null;
@@ -94,7 +94,7 @@ public class AuctionTCPReadHandler implements Runnable{
                   if(message.contains("end"))break;
                   com = this.ExtractInfo(new Request(this.client,message));               
                   this.queue.offer(com); 
-                   output.output("ServerSocketHandleThread received"
+                   logger.output("ServerSocketHandleThread received"
                            +" message and forwarded a CommandTask Object to AMSThread:\n"
                            +"CommandTask[ServerSocketHandlThread]:"+"\n"
                            +com.toString(), 3);
@@ -108,12 +108,12 @@ public class AuctionTCPReadHandler implements Runnable{
                  
             }catch(ClientException e)
             {
-                this.output.output("ServerSocketHandleThread:ClientException:"+e.getMessage());
+                this.logger.output("ServerSocketHandleThread:ClientException:"+e.getMessage());
             } catch (OperationException ex) {
-                   this.output.output("ServerSocketHandleThread:OperationException:"+ex.getMessage());
+                   this.logger.output("ServerSocketHandleThread:OperationException:"+ex.getMessage(),2);
                    Thread.currentThread().interrupt();
                 }
-            output.output("ServerSocketHandleThread end....", 2);
+            logger.output("ServerSocketHandleThread end....", 2);
            
             
         }

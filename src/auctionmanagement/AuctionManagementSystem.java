@@ -16,7 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import MyLogger.Log;
-import communication.ClientUDPException;
+//import communication.ClientUDPException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TimerTask;
@@ -59,11 +59,11 @@ public class AuctionManagementSystem implements Runnable{
         this.auction_map=new ConcurrentHashMap<Integer,Auction>();
         this.timer = new Timer(true);
         this.notificationchannel = new LinkedBlockingQueue<Notification>();
-        this.NotificationServer = new AuctionUDPMessageServer(notificationchannel,this.logger);
+        //this.NotificationServer = new AuctionUDPMessageServer(notificationchannel,this.logger);
         this.outgoingmessagechannel = new LinkedBlockingQueue<Answer>();
         this.outgoingMessageServer = new AuctionTCPMessageServer(outgoingmessagechannel,this.logger);
         
-        this.pool.execute(NotificationServer);
+        //this.pool.execute(NotificationServer);
         this.pool.execute(outgoingMessageServer);
         this.logger.output("AuctionManagementSystem created...", 2);
     }
@@ -134,17 +134,17 @@ public class AuctionManagementSystem implements Runnable{
                 bidder=null;
             else
                 bidder=account_map.get(this.auc.getHighestBidder());
-            Notification notificationOwner=null;
-            Notification notificationBidder=null;
+            //Notification notificationOwner=null;
+            //Notification notificationBidder=null;
                     
-                    
+            /*       
             String messageforBidderOwner = new String("!auction-ended"+" "
                             +auc.getHighestBidder()
                             +" "
                             +Double.toString(auc.getHighestBid())
                             +" "
                             +auc.getDescription());
-            
+           
             try
             {
              if(owner.isOnline())
@@ -172,7 +172,7 @@ public class AuctionManagementSystem implements Runnable{
             }catch(ClientUDPException e)
             {
                 this.error.output("TimerTaskThread:ClientUDPException:"+e.getMessage());
-            }
+            }*/
              this.error.output("TimerTaskHandleThread finished a schedule...", 2);
         }
     
@@ -213,21 +213,23 @@ public class AuctionManagementSystem implements Runnable{
               try{
                 StringBuffer list=new StringBuffer();
                 Iterator<Map.Entry<Integer,Auction>> iterator =auction_map.entrySet().iterator();
-                while(iterator.hasNext())
-                {
-                    Map.Entry<Integer,Auction> entry = iterator.next(); 
-                    list.append(entry.getKey().toString()+"."+" '"
-                            +entry.getValue().getDescription()+"' "
-                            +entry.getValue().getOwner()+" "
-                            +entry.getValue().getEndDate()+" "
-                            +Double.toString(entry.getValue().getHighestBid())+" "
-                            +entry.getValue().getHighestBidder()+"\n" );
+                if(iterator.hasNext()){//if no auction entry avaible, no sending
+                    while(iterator.hasNext())
+                    {
+                        Map.Entry<Integer,Auction> entry = iterator.next(); 
+                        list.append(entry.getKey().toString()+"."+" '"
+                                +entry.getValue().getDescription()+"' "
+                                +entry.getValue().getOwner()+" "
+                                +entry.getValue().getEndDate()+" "
+                                +Double.toString(entry.getValue().getHighestBid())+" "
+                                +entry.getValue().getHighestBidder()+"\n" );
+                    }
+
+                    list.setCharAt(list.length()-1,' ');
+                    Answer a = new Answer(list.toString(),this.commandtask.list.client);
+
+                    outgoingmessagechannel.offer(a);
                 }
-                
-                list.setCharAt(list.length()-1,' ');
-                Answer a = new Answer(list.toString(),this.commandtask.list.client);
-                
-                outgoingmessagechannel.offer(a);
               }catch(Exception e){
                   logger.output("AMSHandlerThread:list:Exception:"+e.getMessage());
               }
@@ -358,6 +360,7 @@ public class AuctionManagementSystem implements Runnable{
                         
                         Answer a = new Answer(ans,commandtask.bid.client);
                         outgoingmessagechannel.offer(a);
+                        /*
                         if(oldBidder!=null)
                         {
                             if(oldBidder.getClient()!=null)
@@ -370,7 +373,7 @@ public class AuctionManagementSystem implements Runnable{
                                 oldBidder.addNotification(not);
                                  logger.output("AMSHandlerThread:Bid:Notification store for user"+oldBidder.getName(),3);
                             }
-                        }
+                        }*/
                         
                     }else
                     {
