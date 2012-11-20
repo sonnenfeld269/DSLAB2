@@ -108,8 +108,14 @@ public class AuctionTCPReadHandler implements Runnable{
                  
             }catch(ClientException e)
             {
-                this.logger.output("ServerSocketHandleThread:ClientException:"+e.getMessage());
+                this.logger.output("ServerSocketHandleThread:ClientException:"+e.getMessage(),2);
+                 Thread.currentThread().interrupt();
             } catch (OperationException ex) {
+                
+                    CommandTask.End l = new CommandTask.End(this.client);
+                    CommandTask c= new CommandTask(l);
+                    this.queue.offer(c); 
+                    
                    this.logger.output("ServerSocketHandleThread:OperationException:"+ex.getMessage(),2);
                    Thread.currentThread().interrupt();
                 }

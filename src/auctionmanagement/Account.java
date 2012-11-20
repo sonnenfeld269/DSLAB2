@@ -28,7 +28,7 @@ public class Account {
     private int udpport=-1;
     
     LinkedBlockingQueue<Notification> notificationchannel=null;
-    
+  
     public Account(String name,Client client,int udpPort,LinkedBlockingQueue<Notification> notificationchannel)throws AccountException
     {
         this.name = name;

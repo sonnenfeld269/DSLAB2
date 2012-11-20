@@ -613,6 +613,61 @@ public class AuctionManagementSystem implements Runnable{
                   logger.output("AMSHandlerThread:bid:Exception:"+e.getMessage(),3);
               } 
                 
+            }else  if(this.commandtask.end!=null)
+            {   String host=null;
+                int port=0;
+                Account auc=null;
+                Iterator<Map.Entry<String,Account>> iterator =account_map.entrySet().iterator();
+                if(iterator.hasNext()){//if no auction entry avaible, no sending
+                    while(iterator.hasNext())
+                    {
+                        Map.Entry<String,Account> entry = iterator.next(); 
+                        auc=entry.getValue();
+                        if(auc.getClient()!=null)
+                        {
+                            host=auc.getClient().getDestinationHost();
+                            port=auc.getClient().getDestinationPort();
+                        
+                        
+                            if(this.commandtask.end.client.getDestinationHost().contentEquals(host)
+                              && (this.commandtask.end.client.getDestinationPort()==port) )
+                            {
+                               auc.deactivateAccount(); 
+                               account_map.replace(entry.getKey(), auc);
+                               logger.output("AMSHandlerThread:end:USER_DISCONNECTED:"+"\n"
+                                       + "User "+auc.getName()+" was still logged in.",2);
+                                /*********** RMI *******************************/
+                                if(rmiAvailability)
+                                {
+                                    try{
+                                        analytic.processEvents(
+                                            new UserEvent(auc.getName(),
+                                                UserEvent.UserEventType.USER_DISCONNECTED)
+                                            );
+
+                                        logger.output("AMSHandlerThread:end:RMI"+
+                                            ":processEvent:Invoke::"
+                                                +"\nUser:"+auc.getName()
+                                                +"\nType:USER_DISCONNECTED",3);
+                                     }catch(RemoteException e)
+                                    {
+                                        logger.output("AMS_HandlerThread:end:RemoteException"
+                                                +":"+e.getMessage(), 2);
+                                    }
+                                }
+
+                             /*********** RMI *******************************/
+
+
+                            }
+                        }
+                    }
+ 
+                }
+                
+                
+                
+                
             }
              logger.output("AMS_HandlerThread finished",2);
         }
