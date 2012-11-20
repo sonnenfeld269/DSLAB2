@@ -4,7 +4,7 @@
  */
 package Test;
 
-import AnalyticsServer.AnalyticsServerInterface;
+import RMI.AnalyticsServerInterface;
 import Event.Event;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;

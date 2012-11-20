@@ -24,7 +24,9 @@ import java.util.TimerTask;
 import Event.*;
 
 /*********** RMI *******************************/
-import AnalyticsServer.AnalyticsServerInterface;
+import RMI.AnalyticsServerInterface;
+import RMI.RMIRegistry;
+import RMI.RMIRegistryException;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -48,11 +50,10 @@ public class AuctionManagementSystem implements Runnable{
     private final ExecutorService pool;
     private Log logger=null;
     /*********** RMI *******************************/
-    private final String HOST = "localhost";
-    private final int PORT = 1099;
-    private Registry registry=null;
-    private boolean rmiAvailability=false;
+    private String propertyFile="./src/registry.properties";
+    private RMIRegistry registry=null;
     private AnalyticsServerInterface analytic=null;
+    boolean rmiAvailable;
     /*********** RMI *******************************/
     private CommandTask readRequest()
     {
@@ -88,17 +89,14 @@ public class AuctionManagementSystem implements Runnable{
             /*
              * ***************RMI**********************
              */
-             this.registry = LocateRegistry.getRegistry(HOST, PORT);
-             analytic = (AnalyticsServerInterface) registry.lookup(AnalyticsServerInterface.class.getSimpleName());
-             rmiAvailability=true;
+             registry=new RMIRegistry(propertyFile);
+             analytic = registry.getAnalyticsInterface();
+             rmiAvailable=true;
              /*
              * ***************RMI**********************
              */
-        } catch (RemoteException ex) {
-           this.logger.output("AuctionManagementSystem:RMI:Error:"+ex.getMessage(), 2);
-        }catch(NotBoundException ex)
-        {
-          this.logger.output("AuctionManagementSystem:RMI:Error:"+ex.getMessage(), 2);
+        } catch (RMIRegistryException ex) {
+           this.logger.output("AuctionManagementSystem:RMIRegistryException:"+ex.getMessage(), 2);
         }
         
         
@@ -174,7 +172,7 @@ public class AuctionManagementSystem implements Runnable{
             
               /*********** RMI *******************************/
             
-            if(rmiAvailability)
+            if(rmiAvailable)
             {
                 try {
                     analytic.processEvents(
@@ -331,7 +329,7 @@ public class AuctionManagementSystem implements Runnable{
                                     "user "+commandtask.login.user, 3);
                            
                             /*********** RMI *******************************/
-                            if(rmiAvailability)
+                            if(rmiAvailable)
                             {
                                 try{
                                     analytic.processEvents(
@@ -367,7 +365,7 @@ public class AuctionManagementSystem implements Runnable{
                         logger.output("AMSHandlerThread:login finished:"+
                                     "user "+commandtask.login.client, 3);
                         /*********** RMI *******************************/
-                            if(rmiAvailability)
+                            if(rmiAvailable)
                             {
                                 try{
                                     analytic.processEvents(
@@ -409,7 +407,7 @@ public class AuctionManagementSystem implements Runnable{
                             outgoingmessagechannel.offer(a);
                             
                             /*********** RMI *******************************/
-                            if(rmiAvailability)
+                            if(rmiAvailable)
                             {
                                 try{
                                     analytic.processEvents(
@@ -457,7 +455,7 @@ public class AuctionManagementSystem implements Runnable{
                     outgoingmessagechannel.offer(a);
                     
                     /*********** RMI *******************************/
-                            if(rmiAvailability)
+                            if(rmiAvailable)
                             {
                                 try{
                                     analytic.processEvents(
@@ -524,7 +522,7 @@ public class AuctionManagementSystem implements Runnable{
                         outgoingmessagechannel.offer(a);
                         
                         /*********** RMI *******************************/
-                            if(rmiAvailability)
+                            if(rmiAvailable)
                             {
                                 try{
                                     analytic.processEvents(
@@ -568,7 +566,7 @@ public class AuctionManagementSystem implements Runnable{
                             */
                             
                             /*********** RMI *******************************/
-                            if(rmiAvailability)
+                            if(rmiAvailable)
                             {
                                 try{
                                     analytic.processEvents(
@@ -637,7 +635,7 @@ public class AuctionManagementSystem implements Runnable{
                                logger.output("AMSHandlerThread:end:USER_DISCONNECTED:"+"\n"
                                        + "User "+auc.getName()+" was still logged in.",2);
                                 /*********** RMI *******************************/
-                                if(rmiAvailability)
+                                if(rmiAvailable)
                                 {
                                     try{
                                         analytic.processEvents(

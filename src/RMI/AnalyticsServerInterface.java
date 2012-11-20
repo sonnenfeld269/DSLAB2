@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package AnalyticsServer;
+package RMI;
 
 import Event.Event;
 import java.rmi.Remote;

@@ -4,6 +4,7 @@
  */
 package AnalyticsServer;
 
+import RMI.AnalyticsServerInterface;
 import Event.Event;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
