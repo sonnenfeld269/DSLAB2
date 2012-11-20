@@ -4,19 +4,13 @@
  */
 package RMI;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.rmi.AccessException;
-import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.Properties;
 import org.apache.logging.log4j.Logger;
-import org.apache.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import utils.EasyProperties;
 
