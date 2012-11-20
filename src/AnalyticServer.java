@@ -7,10 +7,14 @@
  *
  * @author sanker
  */
+
+import AnalyticsServer.AnalyticsServer;
+
 public class AnalyticServer {
     
     public static void main(String[] args)
     {
-        
+        AnalyticsServer analyticserver=new AnalyticsServer("./src/registry.properties");
+        analyticserver.run();
     }
 }
