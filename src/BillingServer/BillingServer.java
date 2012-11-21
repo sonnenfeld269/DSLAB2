@@ -20,23 +20,6 @@ import java.rmi.registry.Registry;
  */
 public class BillingServer {
 
-    private static final int PORT = 1099;
-    private static Registry registry;
-
-    public static void startRegistry() throws RemoteException {
-        // create in server registry
-        registry = java.rmi.registry.LocateRegistry.createRegistry(PORT);
-    }
-
-    public static void registerObject(String name, Remote remoteObj) throws RemoteException, AlreadyBoundException {
-        //  Registry registry = LocateRegistry.getRegistry();
-        registry.bind(name, remoteObj);
-        System.out.println("Registered: " + name + " -> " + remoteObj.getClass().getName() + "[" + remoteObj + "]");
-    }
-
-    public static void main(String[] args) throws Exception {
-        startRegistry();
-        registerObject(BillingServerInterface.class.getSimpleName(), new BillingServerInterfaceImpl());
-        //    Thread.sleep(5 * 60 * 1000);
-    }
+  //start RMI Registry @see AnalyticsServer.java
+    
 }
