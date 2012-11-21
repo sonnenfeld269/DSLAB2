@@ -34,6 +34,14 @@ public class AuctionEvent extends  Event {
         AUCTION_STARTED,
         AUCTION_ENDED
     }
+    
+    public String toString()
+    {
+        return (super.toString()+"\n"
+                +"AuctionID:"+this.auctionID+"\n"
+                );
+    }
+
 
     
 }

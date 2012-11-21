@@ -77,7 +77,7 @@ public class Auction {
     
     public synchronized boolean setnewBid(String bidder,double bid)
     {
-        if(this.highest_bid_amount>bid)
+        if(this.highest_bid_amount>=bid)
             return false;
         this.highest_bid_amount=bid;
         this.highest_bidder=bidder;

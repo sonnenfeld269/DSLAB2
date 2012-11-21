@@ -44,6 +44,12 @@ public class StatisticsEvent extends  Event {
         return this.value;
     }
 
+    public String toString()
+    {
+        return (super.toString()+"\n"
+                +"value:"+this.value+"\n"
+                );
+    }
    
 }
 

@@ -9,32 +9,22 @@ package auctionmanagement;
  * @author sanker
  */
 
-import communication.Server;
-import communication.ServerException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.Timer;
-import java.util.concurrent.ExecutorService;
-import MyLogger.Log;
-//import communication.ClientUDPException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TimerTask;
-
 import Event.*;
-
+import MyLogger.Log;
 /*********** RMI *******************************/
 import RMI.AnalyticsServerInterface;
 import RMI.RMIRegistry;
 import RMI.RMIRegistryException;
-import java.rmi.AccessException;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 /*********** RMI *******************************/
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+
 
 
 public class AuctionManagementSystem implements Runnable{
@@ -208,7 +198,9 @@ public class AuctionManagementSystem implements Runnable{
                     
                     
                 } catch (RemoteException ex) {
-                    logger.output("TimerTaskHandle:RemoteException:"+ex.getMessage(), 2);
+                    logger.output("TimerTaskHandle:RMI:RemoteException:"+ex.getMessage(), 2);
+                }catch(NullPointerException e){
+                  logger.output("TimerTaskHandle:RMI:NullPointerException:"+e.getMessage());
                 }
                 
             }
@@ -317,6 +309,7 @@ public class AuctionManagementSystem implements Runnable{
    
             }else  if(this.commandtask.login!=null)
             {
+                Account debug=null;
              try{ 
                   logger.output("AMSHandlerThread:login for user:"+commandtask.login.user, 3);
                 if(account_map.containsKey(this.commandtask.login.user)) 
@@ -349,9 +342,12 @@ public class AuctionManagementSystem implements Runnable{
                                             + "\nUser:"+commandtask.login.user,3);
                                 }catch(RemoteException e)
                                 {
-                                    logger.output("AMS_HandlerThread:login:RemoteException"
+                                    logger.output("AMS_HandlerThread:login:RMI:RemoteException"
                                             +":"+e.getMessage(), 2);
-                                }
+                                }catch(NullPointerException e){
+                                   logger.output("AMS_HandlerThread:login:RMI:NullPointerException"
+                                            +":"+e.getMessage(), 2);
+                                 }
                             }
                             
                             /*********** RMI *******************************/
@@ -359,12 +355,15 @@ public class AuctionManagementSystem implements Runnable{
                         }
                     }
                 }else{   
+                    String name=null;
                     logger.output("AMSHandlerThread:login start with new account", 3);
                     Account acc = new Account(commandtask.login.user,
                         commandtask.login.client,
                         commandtask.login.udpPort,
                         notificationchannel);
-                    if(account_map.put(acc.getName(), acc)!=null)
+                    name =acc.getName();
+                    debug=account_map.put(name, acc);
+                    if(account_map.containsKey(name))
                     {
                         String answer = new String("Succesfully logged in as"
                             +" "+commandtask.login.user+"!");
@@ -385,9 +384,12 @@ public class AuctionManagementSystem implements Runnable{
                                             + "\nUser:"+commandtask.login.user,3);
                                 }catch(RemoteException e)
                                 {
-                                    logger.output("AMS_HandlerThread:login:RemoteException"
+                                    logger.output("AMS_HandlerThread:login:RMI:RemoteException"
                                             +":"+e.getMessage(), 2);
-                                }
+                                }catch(NullPointerException e){
+                                   logger.output("AMS_HandlerThread:login:RMI:NullPointerException"
+                                            +":"+e.getMessage(), 2);
+                                 }
                             }
                             
                          /*********** RMI *******************************/
@@ -395,6 +397,9 @@ public class AuctionManagementSystem implements Runnable{
                 }
                 }catch(AccountException e){
                   logger.output("AMSHandlerThread:login:"+e.getMessage());
+                }catch(NullPointerException e){
+                     logger.output("AMS_HandlerThread:login:NullPointerException"
+                           +":"+e.getMessage(), 2);
                 }catch(Exception e){
                   logger.output("AMSHandlerThread:login:Exception:"+e.getMessage());
                 } 
@@ -419,17 +424,20 @@ public class AuctionManagementSystem implements Runnable{
                             {
                                 try{
                                     analytic.processEvents(
-                                        new UserEvent(commandtask.login.user,
+                                        new UserEvent(commandtask.logout.user,
                                             UserEvent.UserEventType.USER_LOGOUT)
                                         );
                                     logger.output("AMSHandlerThread:logout:RMI"+
                                         ":processEvent:Invoke::"
-                                            + "User:"+commandtask.login.user,3);
+                                            + "User:"+commandtask.logout.user,3);
                                 }catch(RemoteException e)
                                 {
-                                    logger.output("AMS_HandlerThread:logout:RemoteException:"
+                                    logger.output("AMS_HandlerThread:logout:RMI:RemoteException:"
                                             +e.getMessage(), 2);
-                                }
+                                }catch(NullPointerException e){
+                                   logger.output("AMS_HandlerThread:logout:RMI:NullPointerException"
+                                            +":"+e.getMessage(), 2);
+                                 }
                             }
                             
                          /*********** RMI *******************************/
@@ -440,7 +448,9 @@ public class AuctionManagementSystem implements Runnable{
                             
                         }else throw new Exception("Could not deactivate User!");
                     }else throw new Exception("Didn't find user!");
-                }catch(Exception e){
+                }catch(NullPointerException e){
+                  logger.output("AMSHandlerThread:logout:NullPointerException:"+e.getMessage());
+                } catch(Exception e){
                   logger.output("AMSHandlerThread:logout:Exception:"+e.getMessage());
                 } 
                 
@@ -474,17 +484,21 @@ public class AuctionManagementSystem implements Runnable{
                                         ":processEvent:Invoke::"
                                             + "AuctionID:"+auc.getID(),3);
                                  }catch(RemoteException e)
-                                {
-                                    logger.output("AMS_HandlerThread:create:RemoteException"
+                                 {
+                                    logger.output("AMS_HandlerThread:RMI:create:RemoteException"
                                             +":"+e.getMessage(), 2);
-                                }
+                                 }catch(NullPointerException e){
+                                   logger.output("AMS_HandlerThread:create:RMI:NullPointerException"
+                                            +":"+e.getMessage(), 2);
+                                 }
                             }
                             
                          /*********** RMI *******************************/
-                    
-
-                    
+                  
                 }
+              }catch(NullPointerException e){
+                  logger.output("AMS_HandlerThread:create:NullPointerException"
+                      +":"+e.getMessage(), 2);
               }catch(Exception e){
                   logger.output("AMSHandlerThread:create:Exception:"+e.getMessage());
               } 
@@ -520,11 +534,12 @@ public class AuctionManagementSystem implements Runnable{
                         logger.output("AMSHandlerThread:Bid:setNewBid:newBid"+auc.getHighestBid(),3);
                         auction_map.replace(id,auc);
                         
-                        String not=new String("!new-bid"+" "
-                                +auc.getDescription());
-                        String ans=new String("You succesfully bid with"
-                                + " "+auc.getHighestBid()+" "
-                                +"on"+" '"+auc.getDescription()+"'.");
+                        String not="!new-bid"+" "+auc.getDescription();
+                     
+                        String ans;
+                        ans = "You succesfully bid with"
+                       + " "+auc.getHighestBid()+" "
+                       +"on"+" '"+auc.getDescription()+"'.";
                         
                         Answer a = new Answer(ans,commandtask.bid.client);
                         outgoingmessagechannel.offer(a);
@@ -546,8 +561,11 @@ public class AuctionManagementSystem implements Runnable{
                                             +"\nType:BID_PLACED",3);
                                  }catch(RemoteException e)
                                 {
-                                    logger.output("AMS_HandlerThread:bid:RemoteException"
+                                    logger.output("AMS_HandlerThread:RMI:bid:RemoteException"
                                             +":"+e.getMessage(), 2);
+                                }catch(NullPointerException e){
+                                    logger.output("AMS_HandlerThread:RMI:bid:NullPointerException"
+                                        +":"+e.getMessage(), 2);
                                 }
                             }
                             
@@ -591,8 +609,11 @@ public class AuctionManagementSystem implements Runnable{
                                             +"\nType:BID_OVERBID",3);
                                  }catch(RemoteException e)
                                 {
-                                    logger.output("AMS_HandlerThread:bid:RemoteException"
+                                    logger.output("AMS_HandlerThread:RMI:bid:RemoteException"
                                             +":"+e.getMessage(), 2);
+                                }catch(NullPointerException e){
+                                    logger.output("AMS_HandlerThread:RMI:bid:NullPointerException"
+                                        +":"+e.getMessage(), 2);
                                 }
                             }
                             
@@ -615,60 +636,77 @@ public class AuctionManagementSystem implements Runnable{
                         outgoingmessagechannel.offer(a);
                     }
                     
-              }catch(Exception e){
-                  logger.output("AMSHandlerThread:bid:Exception:"+e.getMessage(),3);
+              }catch(NullPointerException e){
+                 logger.output("AMS_HandlerThread:bid:NullPointerException"
+                     +":"+e.getMessage(), 2);
+             }catch(Exception e){
+                  logger.output("AMSHandlerThread:bid:Exception:"+e.getMessage(),2);
               } 
                 
             }else  if(this.commandtask.end!=null)
-            {   String host=null;
-                int port=0;
-                Account auc=null;
-                Iterator<Map.Entry<String,Account>> iterator =account_map.entrySet().iterator();
-                if(iterator.hasNext()){//if no auction entry avaible, no sending
-                    while(iterator.hasNext())
-                    {
-                        Map.Entry<String,Account> entry = iterator.next(); 
-                        auc=entry.getValue();
-                        if(auc.getClient()!=null)
+            {   
+                try{
+                    String host=null;
+                    int port=0;
+                    Account auc=null;
+                    Iterator<Map.Entry<String,Account>> iterator =account_map.entrySet().iterator();
+                    if(iterator.hasNext()){//if no auction entry avaible, no sending
+                        while(iterator.hasNext())
                         {
-                            host=auc.getClient().getDestinationHost();
-                            port=auc.getClient().getDestinationPort();
-                        
-                        
-                            if(this.commandtask.end.client.getDestinationHost().contentEquals(host)
-                              && (this.commandtask.end.client.getDestinationPort()==port) )
+                            Map.Entry<String,Account> entry = iterator.next(); 
+                            auc=entry.getValue();
+                            if(auc.getClient()!=null)
                             {
-                               auc.deactivateAccount(); 
-                               account_map.replace(entry.getKey(), auc);
-                               logger.output("AMSHandlerThread:end:USER_DISCONNECTED:"+"\n"
-                                       + "User "+auc.getName()+" was still logged in.",2);
-                                /*********** RMI *******************************/
-                                if(rmiAvailable)
+                                host=auc.getClient().getDestinationHost();
+                                port=auc.getClient().getDestinationPort();
+
+
+                                if(this.commandtask.end.client.getDestinationHost().contentEquals(host)
+                                  && (this.commandtask.end.client.getDestinationPort()==port) )
                                 {
-                                    try{
-                                        analytic.processEvents(
-                                            new UserEvent(auc.getName(),
-                                                UserEvent.UserEventType.USER_DISCONNECTED)
-                                            );
-
-                                        logger.output("AMSHandlerThread:end:RMI"+
-                                            ":processEvent:Invoke::"
-                                                +"\nUser:"+auc.getName()
-                                                +"\nType:USER_DISCONNECTED",3);
-                                     }catch(RemoteException e)
+                                   auc.deactivateAccount(); 
+                                   account_map.replace(entry.getKey(), auc);
+                                   logger.output("AMSHandlerThread:end:USER_DISCONNECTED:"+"\n"
+                                           + "User "+auc.getName()+" was still logged in.",2);
+                                    /*********** RMI *******************************/
+                                    if(rmiAvailable)
                                     {
-                                        logger.output("AMS_HandlerThread:end:RemoteException"
-                                                +":"+e.getMessage(), 2);
+                                        try{
+                                            analytic.processEvents(
+                                                new UserEvent(auc.getName(),
+                                                    UserEvent.UserEventType.USER_DISCONNECTED)
+                                                );
+
+                                            logger.output("AMSHandlerThread:end:RMI"+
+                                                ":processEvent:Invoke::"
+                                                    +"\nUser:"+auc.getName()
+                                                    +"\nType:USER_DISCONNECTED",3);
+                                         }catch(RemoteException e)
+                                        {
+                                            logger.output("AMS_HandlerThread:RMI:end:RemoteException"
+                                                    +":"+e.getMessage(), 2);
+                                        }catch(NullPointerException e)
+                                        {
+                                            logger.output("AMS_HandlerThread:RMI:end:NullPointerException"
+                                                    +":"+e.getMessage(), 2);
+                                        }
                                     }
+
+                                 /*********** RMI *******************************/
+
+
                                 }
-
-                             /*********** RMI *******************************/
-
-
                             }
                         }
+
                     }
- 
+
+                }catch(NullPointerException e){
+                 logger.output("AMS_HandlerThread:end:NullPointerException"
+                     +":"+e.getMessage(), 2);
+                }catch(Exception e){
+                 logger.output("AMS_HandlerThread:end:Exception"
+                     +":"+e.getMessage(), 2);
                 }
                 
                 
