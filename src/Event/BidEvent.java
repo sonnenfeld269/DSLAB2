@@ -56,6 +56,15 @@ public class BidEvent extends  Event {
         BID_OVERBID,
         BID_WON
     }
+    
+    public String toString()
+    {
+        return (super.toString()+"\n"
+                +"username:"+this.userName+"\n"
+                +"AuctionID:"+this.auctionID+"\n"
+                +"Price:"+this.price+"\n"
+                );
+    }
 
    
 }

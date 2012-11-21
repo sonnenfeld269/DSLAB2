@@ -16,5 +16,9 @@ public class AnalyticServer {
     {
         AnalyticsServer analyticserver=new AnalyticsServer("./src/registry.properties");
         analyticserver.run();
+  
+        System.exit(0);
     }
+    
+    
 }

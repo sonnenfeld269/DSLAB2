@@ -39,7 +39,6 @@ public class AnalyticsServer implements Runnable{
     private RMIRegistry registry=null;
     private AnalyticsServerInterface asi=null;
     private Executor pool=null;
-    
     public AnalyticsServer (String propertyFile)
     {
         try {
@@ -55,9 +54,9 @@ public class AnalyticsServer implements Runnable{
              **/
             //register AnalyticsServerInterfaceImpl
             registry.registerObject(AnalyticsServerInterface.class.getSimpleName(),
-                    new AnalyticsServerInterfaceImpl());
+                    (new AnalyticsServerInterfaceImpl()));
         }catch (RemoteException ex) {
-           // logger.e;
+            //logger.entra;
             
         }catch (RMIRegistryException ex) {
            // logger.e;
@@ -70,7 +69,7 @@ public class AnalyticsServer implements Runnable{
 
     public void run()
     {
-            
+        logger.info("AnalyticServerHandle started...");  
         String line=null;
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         while(!Thread.currentThread().isInterrupted())

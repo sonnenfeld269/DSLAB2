@@ -22,7 +22,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
 
     @Override
     public void processEvents(Event e) throws RemoteException {
-        System.out.println("Event was passed: " + e.toString());
+        System.out.println("Event was passed:\n" + e.toString());
     }
 
     @Override

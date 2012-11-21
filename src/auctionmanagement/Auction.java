@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package auctionmanagement;
 
 import java.sql.Time;
@@ -77,7 +73,7 @@ public class Auction {
     
     public synchronized boolean setnewBid(String bidder,double bid)
     {
-        if(this.highest_bid_amount>bid)
+        if(this.highest_bid_amount>=bid)
             return false;
         this.highest_bid_amount=bid;
         this.highest_bidder=bidder;

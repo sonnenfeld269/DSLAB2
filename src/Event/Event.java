@@ -24,6 +24,7 @@ public class Event implements Serializable{
         timestamp= date.getTime();
         this.ID= type+timestamp;
         this.type=type;
+        
     }
     
     public Event(Event e)
@@ -46,6 +47,11 @@ public class Event implements Serializable{
     public String getType()
     {
         return this.type;
+    }
+    
+    public String toString()
+    {
+        return ("Event:"+this.type+"::ID:"+this.ID+"::timestamp:"+this.timestamp);
     }
     
     

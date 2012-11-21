@@ -30,15 +30,21 @@ public class RMIRegistry {
     public RMIRegistry(String propertyFile)
     {
         logger = LogManager.getLogger(RMIRegistry.class.getSimpleName());
-       
+        String[] str=null;
         this.properties = propertyFile;
         this.registryHost = EasyProperties.getProperty(propertyFile,"registry.host");
         this.registryPort = Integer.parseInt(EasyProperties.getProperty(propertyFile,"registry.port"));
         try {
             this.registry = LocateRegistry.getRegistry(this.registryHost,this.registryPort);
+            str=this.registry.list();
+            logger.debug("Array of the names bound in this registry:length:",str.length);
+            //this.registry.
         } catch (RemoteException ex) {
             this.registry=null;
-            java.util.logging.Logger.getLogger(RMIRegistry.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            //java.util.logging.Logger.getLogger(RMIRegistry.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }catch(Exception ex)
+        {
+            this.registry=null;
         }
         
     }

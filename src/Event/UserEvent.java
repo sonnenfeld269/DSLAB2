@@ -38,6 +38,12 @@ public class UserEvent extends  Event {
         USER_DISCONNECTED
     }
 
+    public String toString()
+    {
+        return (super.toString()+"\n"
+                +"username:"+this.userName+"\n"
+                );
+    }
    
 }
 
