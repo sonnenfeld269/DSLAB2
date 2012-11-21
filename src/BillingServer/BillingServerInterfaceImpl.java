@@ -6,7 +6,6 @@ package BillingServer;
 
 import AnalyticsServer.*;
 import Event.Event;
-import RMI.BillingServerInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
