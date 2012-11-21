@@ -199,6 +199,14 @@ public class AuctionManagementSystem implements Runnable{
                                 +"\nType:BID_WON",3);
                     }
 
+                    /*BillingServer RMI Method Invocation*/
+                    
+                    //billAuction(...)
+                    
+                    /*BillingServer RMI Method Invocation*/
+                    
+                    
+                    
                 } catch (RemoteException ex) {
                     logger.output("TimerTaskHandle:RemoteException:"+ex.getMessage(), 2);
                 }
