@@ -14,7 +14,10 @@ import java.rmi.RemoteException;
  */
 public interface AnalyticsServerInterface extends Remote{
     
-    public void subscribe() throws RemoteException;
+   
+    public long subscribe(ManagementClientCallBackInterface mclient,String filter) throws RemoteException;
+    
     public void processEvents(Event e) throws RemoteException;
-    public void unsubscribe() throws RemoteException;
+    
+    public void unsubscribe(int subsciptionID) throws RemoteException;
 }

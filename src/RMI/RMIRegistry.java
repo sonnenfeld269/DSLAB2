@@ -37,13 +37,15 @@ public class RMIRegistry {
         try {
             this.registry = LocateRegistry.getRegistry(this.registryHost,this.registryPort);
             str=this.registry.list();
-            logger.debug("Array of the names bound in this registry:length:",str.length);
+            logger.info("Array of the names bound in this registry:length:",str.length);
             //this.registry.
         } catch (RemoteException ex) {
+            logger.debug("RMIRegistry:constructor:RemoteException:"+ex.getMessage());
             this.registry=null;
             //java.util.logging.Logger.getLogger(RMIRegistry.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }catch(Exception ex)
         {
+            logger.error("RMIRegistry:constructor:Exception:"+ex.getMessage());
             this.registry=null;
         }
         
@@ -93,6 +95,7 @@ public class RMIRegistry {
             logger.info(msg);
         }catch(RemoteException ex)
         {
+             logger.error("RMIRegistry:registerObject:RemoteException:"+ex.getMessage());
             throw new RMIRegistryException("RemoteException:",ex);
         }
         
@@ -109,12 +112,37 @@ public class RMIRegistry {
             analytic=(AnalyticsServerInterface) registry.lookup(AnalyticsServerInterface.class.getSimpleName());
        
         } catch (RemoteException ex) {
-            java.util.logging.Logger.getLogger(RMIRegistry.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            logger.error("RMIRegistry:getAnalyticsInterface:RemoteException:"+ex.getMessage());
+             throw new RMIRegistryException("RemoteException:",ex);
         } catch (NotBoundException ex) {
-            java.util.logging.Logger.getLogger(RMIRegistry.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            logger.error("RMIRegistry:getAnalyticsInterface:NotBoundException:"+ex.getMessage());
+             throw new RMIRegistryException("NotBoundException:",ex);
         } 
         
         return analytic;
     }
+    
+    public BillingServerInterface getBillingInterface() throws RMIRegistryException 
+    {
+        if(registry==null)
+                throw new RMIRegistryException("No registry located.");
+        
+        BillingServerInterface billing=null;
+        try {
+
+            billing=(BillingServerInterface) registry.lookup(BillingServerInterface.class.getSimpleName());
+       
+        } catch (RemoteException ex) {
+            logger.error("RMIRegistry:RemoteException:"+ex.getMessage());
+        } catch (NotBoundException ex) {
+            logger.error("RMIRegistry:NotBoundException:"+ex.getMessage());
+        } 
+        
+        return billing;
+    }
+    
+    
+    
+    
     
 }
