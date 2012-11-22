@@ -42,25 +42,23 @@ public class AnalyticsServer implements Runnable{
     public AnalyticsServer (String propertyFile)
     {
         try {
-            logger = LogManager.getLogger(RMIRegistry.class.getSimpleName());
+            logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
             /**
              * Get or start Registry(Naming Server)
              **/
             registry=new RMIRegistry(propertyFile);
-            if(registry.getRegistry()==null)
+            if(registry.getRegistry()==null){
                 registry.startRegistry();
+                logger.info("REGISTRY STARTED!");
+            }
             /**
              * Register all neccessary RemoteObjects to the registry
              **/
             //register AnalyticsServerInterfaceImpl
             registry.registerObject(AnalyticsServerInterface.class.getSimpleName(),
                     (new AnalyticsServerInterfaceImpl()));
-        }catch (RemoteException ex) {
-            //logger.entra;
-            
-        }catch (RMIRegistryException ex) {
-           // logger.e;
-            
+        }catch ( RemoteException | RMIRegistryException ex) {
+        ex.printStackTrace();
         }
         
     }

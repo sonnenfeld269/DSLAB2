@@ -4,11 +4,11 @@
  */
 package BillingServer;
 
-import AnalyticsServer.*;
-import Event.Event;
 import RMI.BillingServerInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -16,15 +16,15 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class BillingServerInterfaceImpl  extends UnicastRemoteObject implements BillingServerInterface {
     
+    Logger logger = LogManager.getLogger(BillingServerInterfaceImpl.class);
     public BillingServerInterfaceImpl() throws RemoteException {
         super();
     }
 
     @Override
-    public BillingServerSecure login(String username, String password) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public BillingServerSecure login(String username, String password) throws RemoteException{
+        logger.info("BillingServerInterface Login Method started!");
+        return new BillingServerSecure();
     }
 
-
-    
 }
