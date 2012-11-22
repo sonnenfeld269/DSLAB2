@@ -10,4 +10,5 @@ package RMI;
  */
 public interface BillingServerSecureInterface {
     
+    public String getPriceSteps();
 }
