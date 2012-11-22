@@ -26,7 +26,6 @@ public class ManagementClient implements Runnable{
     private RMIRegistry registry=null;
     private ManagementClientCallBackInterfaceImpl mccbi=null;
      private AnalyticsServerInterface analytic=null;
-    //private Executor pool=null;
     private boolean init=true;
     
     
@@ -55,14 +54,7 @@ public class ManagementClient implements Runnable{
             
             
             /*****BillingServer Part********/        
-            
-            
-            
-            
-            
-            //test
-            analytic.subscribe(mccbi, "(USER_.*)");  
-            
+  
         }catch (RMIRegistryException ex) {
             this.logger.error("ManagementClient:Constructor:RMIRegistryException"+ex.getMessage());
             init=false;
@@ -80,28 +72,59 @@ public class ManagementClient implements Runnable{
        try{
         logger.info("ManagementClientHandle started...");  
         String line=null;
-        System.out.print("\n>");
+       // System.out.print("\n>");
         
         
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         while(!Thread.currentThread().isInterrupted()&&init)
         {
          /*****Analytics und Billing Eingaben*****/
+            //System out analytic and billing
+            //> or user>
             System.out.print("\n>");
+            
             try {
                 while((line=in.readLine())!=null)
                 {
+                    System.out.print("\n>");
                     if(line.contains("!subscribe"))
                     {
                         String[] s= line.split(" ");
-                        if(s.length>2)
+                        if(s.length>=2)
                         {
-                            
-                        }
+                          long sub_id=0;
+                          int position1 = line.indexOf('\'',0);
+                          int position2 = line.indexOf('\'',position1+1);
+                          String regex=line.substring(position1+1,position2);
+                          sub_id= analytic.subscribe(mccbi, regex); 
+                          System.out.print("Created subscription with ID "+sub_id
+                                  +" for events using filter"
+                                  +" '"
+                                  +regex
+                                  + "' ");                       }
                         
                     }else if(line.contains("!unsubscribe"))
                     {
-                        String[] s= line.split(" ");
+                       
+                        try{
+                            String[] s= line.split(" ");
+                            long id=Long.getLong(s[1]);
+                            
+                            boolean b=analytic.unsubscribe(id);
+                            if(b)
+                            {
+                                System.out.print("subscription"
+                                        + id
+                                        +"terminated ");
+                            }else{
+                                System.out.print("ERROR:!unsubscribe not successfull.");
+                            }
+                        }catch(Exception e)
+                        {
+                           System.out.print("ERROR:"+e.getMessage()); 
+                        }
+                        
+                            
                         
                     }else if(line.contains("!print"))
                     {
@@ -122,6 +145,7 @@ public class ManagementClient implements Runnable{
                         //provisorisch
                         Thread.currentThread().interrupt();
                         break;
+                        
                     }else if(line.contains("bill"))
                     {
                         
@@ -132,14 +156,14 @@ public class ManagementClient implements Runnable{
                     
                     /*****Analytics und Billing Eingaben*****/
                 }
-            } catch (IOException e) {
-                
+            } catch (Exception e) {
+                System.out.print("ERROR:"+e.getMessage()); 
             }
         }  
     
        }catch(Exception ex)
        {
-    
+             System.out.print("ERROR:"+ex.getMessage()); 
        }
     }
 }

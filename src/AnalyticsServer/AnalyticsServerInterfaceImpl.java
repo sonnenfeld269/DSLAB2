@@ -51,8 +51,12 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     }
 
     @Override
-    public void unsubscribe(int subsciptionID) throws RemoteException {
-        //throw new UnsupportedOperationException("Not supported yet.");
+    public boolean unsubscribe(long subsciptionID) throws RemoteException {
+        boolean success=true;
+        
+        
+        
+        return success;
     }
 
     
