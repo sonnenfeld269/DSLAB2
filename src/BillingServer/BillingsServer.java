@@ -32,8 +32,11 @@ public class BillingsServer {
             }
             registry.registerObject(BillingServerInterface.class.getSimpleName(),(new BillingServerInterfaceImpl()));
             logger.info("BillingServerInterface was successfully registered to the Registry");
-        } catch (RemoteException | RMIRegistryException ex) {
-            ex.printStackTrace();
+        }catch ( RemoteException ex) { // java 7 wird bei der abgabe nicht unterstützt
+            logger.catching(ex);
+        }catch(RMIRegistryException ex)
+        {
+            logger.catching(ex);
         }
     }
 

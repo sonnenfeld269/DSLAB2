@@ -57,8 +57,12 @@ public class AnalyticsServer implements Runnable{
             //register AnalyticsServerInterfaceImpl
             registry.registerObject(AnalyticsServerInterface.class.getSimpleName(),
                     (new AnalyticsServerInterfaceImpl()));
-        }catch ( RemoteException | RMIRegistryException ex) {
-        ex.printStackTrace();
+        //catch ( RemoteException | RMIRegistryException ex)  geht nicht bei java 6
+        }catch ( RemoteException ex) {
+            logger.catching(ex);
+        }catch(RMIRegistryException ex)
+        {
+            logger.catching(ex);
         }
         
     }
