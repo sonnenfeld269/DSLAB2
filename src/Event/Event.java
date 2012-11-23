@@ -51,7 +51,11 @@ public class Event implements Serializable{
     
     public String toString()
     {
-        return ("Event:"+this.type+"::ID:"+this.ID+"::timestamp:"+this.timestamp);
+       // return ("Event:"+this.type+"::ID:"+this.ID+"::timestamp:"+this.timestamp);
+        Date date = new Date(this.timestamp);
+       
+        return (this.type+": "+date.toString()+" - ");
+
     }
     
     

@@ -37,9 +37,15 @@ public class AuctionEvent extends  Event {
     
     public String toString()
     {
-        return (super.toString()+"\n"
-                +"AuctionID:"+this.auctionID+"\n"
-                );
+        String msg = null;
+        if(super.getType().contains("AUCTION_STARTED"))
+        {
+            msg="auction with ID "+this.getID()+" has started."; 
+        }else  if(super.getType().contains("AUCTION_ENDED"))
+        {
+             msg="auction with ID "+this.getID()+" finished."; 
+        }
+        return (super.toString() + msg );
     }
 
 

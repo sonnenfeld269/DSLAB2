@@ -58,12 +58,20 @@ public class BidEvent extends  Event {
     }
     
     public String toString()
-    {
-        return (super.toString()+"\n"
-                +"username:"+this.userName+"\n"
-                +"AuctionID:"+this.auctionID+"\n"
-                +"Price:"+this.price+"\n"
-                );
+    {   
+        String msg = null;
+        if(super.getType().contains("BID_PLACED"))
+        {
+            msg="user "+this.userName+" placed bid "+this.price+" on auction "+this.auctionID; 
+        }else  if(super.getType().contains("BID_OVERBID"))
+        {
+             msg="user "+this.userName+" was overbid with "+this.price+" on auction "+this.auctionID; 
+        }else  if(super.getType().contains("BID_WON"))
+        {
+             msg="user "+this.userName+" won with "+this.price+" on auction "+this.auctionID; 
+        }
+        
+        return (super.toString() + msg );
     }
 
    

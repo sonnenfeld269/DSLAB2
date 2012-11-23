@@ -40,9 +40,19 @@ public class UserEvent extends  Event {
 
     public String toString()
     {
-        return (super.toString()+"\n"
-                +"username:"+this.userName+"\n"
-                );
+        String msg = null;
+        if(super.getType().contains("USER_LOGIN"))
+        {
+            msg="user "+this.userName+" logged in."; 
+        }else  if(super.getType().contains("USER_LOGOUT"))
+        {
+             msg="user "+this.userName+" logged out."; 
+        }else  if(super.getType().contains("USER_DISCONNECTED"))
+             msg="user "+this.userName+" is disconnected."; 
+        
+        return (super.toString() + msg );
+               
+               
     }
    
 }

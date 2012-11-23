@@ -46,9 +46,31 @@ public class StatisticsEvent extends  Event {
 
     public String toString()
     {
-        return (super.toString()+"\n"
-                +"value:"+this.value+"\n"
-                );
+        String msg = null;
+        if(super.getType().contains("USER_SESSIONTIME_MIN"))
+        {
+            msg="minimum sessiontime is "+this.value; 
+        }else  if(super.getType().contains("USER_SESSIONTIME_MAX"))
+        {
+             msg="maximum sessiontime is "+this.value; 
+        }else  if(super.getType().contains("USER_SESSIONTIME_AVG"))
+        {
+            msg="average sessiontime is "+this.value; 
+        }else  if(super.getType().contains("BID_PRICE_MAX"))
+        {
+             msg="maximum bid price seen so far is "+this.value; 
+        }else  if(super.getType().contains("AUCTION_TIME_AVG"))
+        {
+             msg="average auction time is "+this.value; 
+        }else  if(super.getType().contains("AUCTION_SUCCESS_RATIO"))
+        {
+            msg="average succes ratio over all last auctions is "+this.value; 
+        }else  if(super.getType().contains("BID_COUNT_PER_MINUTE"))
+        {
+            msg="number of bid per minute is "+this.value; 
+        }
+        
+        return (super.toString() + msg );
     }
    
 }
