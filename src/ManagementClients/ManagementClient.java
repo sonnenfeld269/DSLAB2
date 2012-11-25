@@ -1,7 +1,6 @@
 package ManagementClients;
 
 import BillingServer.BillingServerSecure;
-import BillingServer.BillingServerSecureCallbackInterfaceImpl;
 import RMI.AnalyticsServerInterface;
 import RMI.BillingServerInterface;
 import RMI.RMIRegistry;
@@ -20,7 +19,6 @@ public class ManagementClient implements Runnable {
     private Logger logger = null;
     private RMIRegistry registry = null;
     private ManagementClientCallBackInterfaceImpl mccbi = null;
-    private BillingServerSecureCallbackInterfaceImpl bsscbi = null;
     private AnalyticsServerInterface analytic = null;
     private BillingServerInterface billing = null;
     private boolean init = true;
