@@ -1,10 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package BillingServer;
 
 import RMI.BillingServerInterface;
+import RMI.BillingServerSecureCallbackInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import org.apache.logging.log4j.LogManager;
@@ -16,15 +13,24 @@ import org.apache.logging.log4j.Logger;
  */
 public class BillingServerInterfaceImpl  extends UnicastRemoteObject implements BillingServerInterface {
     
-    Logger logger = LogManager.getLogger(BillingServerInterfaceImpl.class);
+    static final Logger logger = LogManager.getLogger(BillingServerInterfaceImpl.class);
+    
     public BillingServerInterfaceImpl() throws RemoteException {
         super();
     }
 
     @Override
     public BillingServerSecure login(String username, String password) throws RemoteException{
-        logger.info("BillingServerInterface Login Method started!");
-        return new BillingServerSecure();
+        logger.debug("BillingServerInterface Login Method started!");
+        BillingServerSecure bss = null;
+        try {
+        bss =  new BillingServerSecureImpl();
+        logger.debug(this.getClass().getName() + " BillingServerSecureImpl can be returned!");
+        return bss;
+        } catch (Exception e) {
+            logger.error("BillingServerSecure could not be returned!");
+            return null;
+        }
     }
 
 }

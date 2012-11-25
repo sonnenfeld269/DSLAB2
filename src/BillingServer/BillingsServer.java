@@ -15,7 +15,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Dave
  */
-public class BillingsServer {
+public class BillingsServer implements Runnable{
 
     private Logger logger = null;
     private RMIRegistry registry = null;
