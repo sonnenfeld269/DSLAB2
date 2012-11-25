@@ -4,6 +4,7 @@
  */
 package BillingServer;
 
+import RMI.BillingServerSecure;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import org.apache.logging.log4j.LogManager;
