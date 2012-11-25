@@ -67,15 +67,15 @@ public class FilterTest {
         
          Pattern p = Pattern.compile(Regex_5);
         
-        filter_1.subscribeRegex(Pattern.compile(Regex_1));
-        filter_2.subscribeRegex(Pattern.compile(Regex_2));
-        filter_3.subscribeRegex(Pattern.compile(Regex_3));
+        filter_1.subscribeRegex(new Long(0),Pattern.compile(Regex_1));
+        filter_2.subscribeRegex(new Long(0),Pattern.compile(Regex_2));
+        filter_3.subscribeRegex(new Long(0),Pattern.compile(Regex_3));
         
-        filter_4.subscribeRegex(Pattern.compile(Regex_1));
-        filter_4.subscribeRegex(Pattern.compile(Regex_4));
+        filter_4.subscribeRegex(new Long(0),Pattern.compile(Regex_1));
+        filter_4.subscribeRegex(new Long(1),Pattern.compile(Regex_4));
         
-        filter_5.subscribeRegex(p);
-        filter_5.subscribeRegex(Pattern.compile(Regex_6));
+        filter_5.subscribeRegex(new Long(0),p);
+        filter_5.subscribeRegex(new Long(1),Pattern.compile(Regex_6));
         
        
         for(int i=0;i<messages.length;i++)
@@ -93,9 +93,9 @@ public class FilterTest {
         }
         
         
-        boolean b=filter_5.unsubscribeRegex(Regex_5);
+        boolean b=filter_5.unsubscribeRegex(new Long(0));
         assertEquals(b,true);
-        b=filter_4.unsubscribeRegex(Regex_1);
+        b=filter_4.unsubscribeRegex(new Long(0));
         assertEquals(b,true);
         
         for(int j=0;j<messages.length;j++)

@@ -21,10 +21,10 @@ public class MessageDistributor implements Runnable{
     private LinkedBlockingQueue<Event> incomingchannel=null;   
     private ConcurrentHashMap<Long,LinkedBlockingQueue<Event>> outcomingdistributor=null;
     private Logger logger=null;
-    public MessageDistributor()
+    public MessageDistributor(LinkedBlockingQueue<Event> incomingchannel)
     {   
         logger = LogManager.getLogger(MessageDistributor.class.getSimpleName());
-        incomingchannel= new LinkedBlockingQueue<Event>();
+        this.incomingchannel=incomingchannel;
         outcomingdistributor=new ConcurrentHashMap<Long,LinkedBlockingQueue<Event>>();
     }
     
@@ -46,12 +46,15 @@ public class MessageDistributor implements Runnable{
                         Map.Entry<Long,LinkedBlockingQueue<Event>> entry = iter.next(); 
                         entry.getValue().offer(event);
                    }
+                   logger.debug("Distributed event: "+event.getType()+" to all MClientHandler.");
                }
                                            
               
             } catch (InterruptedException ex) {
+              logger.catching(ex);
               Thread.currentThread().interrupt();
             }catch (Exception ex) {
+              logger.catching(ex);
               Thread.currentThread().interrupt();
             }             
         
@@ -71,7 +74,7 @@ public class MessageDistributor implements Runnable{
             logger.error("Hashmap registration unsuccesfull.");
             throw new MessageDistributorException("Hashmap registration unsuccesfull.");
         }
-        
+        logger.debug("Add new queue to outcomingdistributor.");
         logger.exit();
         return id;
         
@@ -82,6 +85,7 @@ public class MessageDistributor implements Runnable{
     {
         logger.entry();
         this.outcomingdistributor.remove(id);
+        logger.debug("Remove queue from outcomingdistributor.");
         logger.exit();
     }
     

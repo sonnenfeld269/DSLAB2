@@ -5,23 +5,18 @@
 package AnalyticsServer;
 
 
+import Event.Event;
 import RMI.AnalyticsServerInterface;
 import RMI.RMIRegistry;
 import RMI.RMIRegistryException;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.AlreadyBoundException;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
-import java.util.Properties;
-import java.util.concurrent.Executor;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -38,11 +33,16 @@ public class AnalyticsServer implements Runnable{
     private Logger logger=null;
     private RMIRegistry registry=null;
     private AnalyticsServerInterface asi=null;
-    private Executor pool=null;
+    private ExecutorService pool=null;
+    LinkedBlockingQueue<Task> amsincomechannel=null;
+    LinkedBlockingQueue<Event> distributorincomechannel=null;
+    private AnalyticsServerInterfaceImpl ASII=null;
+    private AnalyticsManagementSystem AMS =null; 
     public AnalyticsServer (String propertyFile)
     {
         try {
-            logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
+           // logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
+            logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME);
             /**
              * Get or start Registry(Naming Server)
              **/
@@ -51,13 +51,25 @@ public class AnalyticsServer implements Runnable{
                 registry.startRegistry();
                 logger.info("REGISTRY STARTED!");
             }
+            
+            //create objects necessary for management
+            amsincomechannel=new LinkedBlockingQueue<Task>();
+            distributorincomechannel=new LinkedBlockingQueue<Event>();
+            ASII=new AnalyticsServerInterfaceImpl();
+            ASII.initialize(amsincomechannel,distributorincomechannel);
+            pool= Executors.newCachedThreadPool();
+            AMS = new AnalyticsManagementSystem(pool,amsincomechannel);
+            //start objects necessary for management
+            pool.execute(AMS);
+           
+            
+           
             /**
              * Register all neccessary RemoteObjects to the registry
              **/
-            //register AnalyticsServerInterfaceImpl
             registry.registerObject(AnalyticsServerInterface.class.getSimpleName(),
-                    (new AnalyticsServerInterfaceImpl()));
-        //catch ( RemoteException | RMIRegistryException ex)  geht nicht bei java 6
+                   ASII);
+            
         }catch ( RemoteException ex) {
             logger.catching(ex);
         }catch(RMIRegistryException ex)

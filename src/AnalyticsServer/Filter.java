@@ -5,8 +5,8 @@
 package AnalyticsServer;
 
 import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.Vector;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,24 +15,27 @@ import java.util.regex.Pattern;
  * @author sanker
  */
 public class Filter {
-    
-    private Vector<Pattern> RegexFilterList=null;
+    private static long counter=0;
+    private long filterID;
+    private ConcurrentHashMap<Long,Pattern> RegexFilterMap=null;
    
     
     public Filter()
     {
-        RegexFilterList= new Vector<Pattern>();
+        filterID=getnewID();
+        RegexFilterMap= new ConcurrentHashMap<Long,Pattern>();
     
     }
     
     boolean checkMessage(String message)
     {
-        ListIterator<Pattern> iter = this.RegexFilterList.listIterator();
-        int pos=0;
+       Iterator<Map.Entry<Long,Pattern>> iter = this.RegexFilterMap.entrySet().iterator();
+        
         while(iter.hasNext())
         {
-            pos=iter.nextIndex();
-            Matcher match=iter.next().matcher(message);
+            Map.Entry<Long,Pattern> entry = iter.next();
+            
+            Matcher match=entry.getValue().matcher(message);
             if(match.matches())
             {
                 return true;
@@ -43,69 +46,45 @@ public class Filter {
         return false;
     }
     
-    public boolean subscribeRegex(Pattern pattern)
+    public long getFilterID()
     {
-       return  this.RegexFilterList.add(pattern);
+        return filterID;
     }
     
-    public boolean subscribeRegex(String regex)
+    public boolean subscribeRegex(Long id,Pattern pattern)
     {
         
-       return  this.RegexFilterList.add(Pattern.compile(regex));
+        this.RegexFilterMap.put(id, pattern);
+        if(RegexFilterMap.containsKey(id))
+            return true;
+        else
+            return false;
     }
     
-    public boolean  unsubscribeRegex(Pattern pattern)
+    public boolean subscribeRegex(Long id,String regex)
+    {
+        
+        this.RegexFilterMap.put(id, Pattern.compile(regex));
+        if(RegexFilterMap.containsKey(id))
+            return true;
+        else
+            return false;
+     
+    }
+    
+    public boolean  unsubscribeRegex(Long id)
     {
       
-      return this.RegexFilterList.remove(pattern);
+      if((this.RegexFilterMap.remove(id))!=null)
+         return true;
+      else 
+          return false;
 
     }
     
-    public boolean  unsubscribeRegex(String regex)
+    private synchronized long getnewID()
     {
-      ListIterator<Pattern> iter = this.RegexFilterList.listIterator();
-      Pattern p=null;
-      int i=0;
-      boolean b=false;
-      while(iter.hasNext())
-      {
-           p=iter.next();
-           i=p.pattern().compareTo(regex);
-           if(i==0)
-           {
-               iter.remove();
-               b=true;
-           }
-      }
-      
-      return b;
-     
-      
-      
-      
-     
+        return counter++;
     }
-    
-    
-    
-    public boolean  unsubscribeRegex(int position)
-    {
-      Pattern p=null;
-      boolean b=false;
-       try{
-           
-        p=this.RegexFilterList.remove(position);
-        if(p!=null)
-            b=true;
-       }catch(IndexOutOfBoundsException e)
-       {
-           
-       }
-           
-       return b;
-      
-    }
-    
-  
-    
+
 }
