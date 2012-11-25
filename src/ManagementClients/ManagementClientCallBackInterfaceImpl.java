@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class ManagementClientCallBackInterfaceImpl extends UnicastRemoteObject implements ManagementClientCallBackInterface{
     
+    private long id;
     private boolean mode=false;
     private ConcurrentLinkedQueue<String> eventbuffer=null;
     private Logger logger=null;
@@ -47,11 +48,20 @@ public class ManagementClientCallBackInterfaceImpl extends UnicastRemoteObject i
         }
     }
     
-    public void initializeManagementClient(Logger logger)
+     @Override 
+    public long getManagementClientID()throws RemoteException
+    {
+         return id;
+     
+    }
+    
+    
+    public void initializeManagementClient(long id,Logger logger)
     {
         if(!init)
         {
             this.logger=logger;
+            this.id=id;
             mode=false;
             eventbuffer= new ConcurrentLinkedQueue<String>();
             init=true;

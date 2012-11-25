@@ -15,4 +15,5 @@ public interface ManagementClientCallBackInterface extends Remote{
     
     void processEvent(String msg)throws RemoteException;
     
+    public long getManagementClientID()throws RemoteException;
 }

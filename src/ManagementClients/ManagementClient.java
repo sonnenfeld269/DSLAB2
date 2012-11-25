@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class ManagementClient implements Runnable {
 
+    private static long counter=0;
     private Logger logger = null;
     private RMIRegistry registry = null;
     private ManagementClientCallBackInterfaceImpl mccbi = null;
@@ -37,7 +38,7 @@ public class ManagementClient implements Runnable {
              */
             analytic = registry.getAnalyticsInterface();
             mccbi = new ManagementClientCallBackInterfaceImpl();
-            mccbi.initializeManagementClient(logger);
+            mccbi.initializeManagementClient(this.getID(),logger);
             /**
              * ***AnalyticServer Part*******
              */
@@ -95,17 +96,15 @@ public class ManagementClient implements Runnable {
                         } else if (line.contains("!unsubscribe")) {
 
                             try {
-                                String[] s = line.split(" ");
-                                long id = Long.getLong(s[1]);
-
-                                boolean b = analytic.unsubscribe(id);
-                                if (b) {
-                                    System.out.print("subscription"
-                                            + id
-                                            + "terminated ");
-                                } else {
-                                    System.out.print("ERROR:!unsubscribe not successfull.");
-                                }
+                               String[] s= line.split(" ");
+                            long id=Long.getLong(s[1]);
+                            
+                            analytic.unsubscribe(id);
+                            System.out.print("subscription"
+                                        + id
+                                        +"terminated ");
+                           
+                            
                             } catch (Exception e) {
                                 System.out.print("ERROR:" + e.getMessage());
                             }
@@ -161,5 +160,12 @@ public class ManagementClient implements Runnable {
             logger.catching(ex);
             System.out.print("ERROR:" + ex.getMessage());
         }
+    }
+    
+    
+    
+     private  synchronized long getID()
+    {
+        return counter++;
     }
 }
