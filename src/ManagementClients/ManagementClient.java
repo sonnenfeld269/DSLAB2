@@ -15,15 +15,16 @@ import org.apache.logging.log4j.Logger;
  * @author Dave
  */
 public class ManagementClient implements Runnable {
-
-    private static long counter=0;
+    
+    private static long counter = 0;
     private Logger logger = null;
     private RMIRegistry registry = null;
     private ManagementClientCallBackInterfaceImpl mccbi = null;
     private AnalyticsServerInterface analytic = null;
     private BillingServerInterface billing = null;
+    private BillingServerSecure bss = null;
     private boolean init = true;
-
+    
     public ManagementClient(String propertyFile) {
         try {
             logger = LogManager.getLogger(ManagementClient.class.getSimpleName());
@@ -38,7 +39,7 @@ public class ManagementClient implements Runnable {
              */
             analytic = registry.getAnalyticsInterface();
             mccbi = new ManagementClientCallBackInterfaceImpl();
-            mccbi.initializeManagementClient(this.getID(),logger);
+            mccbi.initializeManagementClient(this.getID(), logger);
             /**
              * ***AnalyticServer Part*******
              */
@@ -56,16 +57,16 @@ public class ManagementClient implements Runnable {
             this.logger.error("ManagementClient:Constructor:Exception:" + ex.getMessage());
             init = false;
         }
-
+        
     }
-
+    
     public void run() {
         try {
             logger.info("ManagementClientHandle started...");
             String line = null;
             // System.out.print("\n>");
 
-
+            
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             while (!Thread.currentThread().isInterrupted() && init) {
                 /**
@@ -74,7 +75,7 @@ public class ManagementClient implements Runnable {
                 //System out analytic and billing
                 //> or user>
                 System.out.print("\n>");
-
+                
                 try {
                     while ((line = in.readLine()) != null) {
                         System.out.print("\n>");
@@ -92,40 +93,40 @@ public class ManagementClient implements Runnable {
                                         + regex
                                         + "' ");
                             }
-
+                            
                         } else if (line.contains("!unsubscribe")) {
-
+                            
                             try {
-                               String[] s= line.split(" ");
-                            long id=Long.getLong(s[1]);
-                            
-                            analytic.unsubscribe(id);
-                            System.out.print("subscription"
+                                String[] s = line.split(" ");
+                                long id = Long.getLong(s[1]);
+                                
+                                analytic.unsubscribe(id);
+                                System.out.print("subscription"
                                         + id
-                                        +"terminated ");
-                           
-                            
+                                        + "terminated ");
+                                
+                                
                             } catch (Exception e) {
                                 System.out.print("ERROR:" + e.getMessage());
                             }
-
-
-
+                            
+                            
+                            
                         } else if (line.contains("!print")) {
                             if (!mccbi.getMode()) {
                                 mccbi.printBuffer();
                             }
                         } else if (line.contains("!hide")) {
                             mccbi.setEventPrintMode(false);
-
+                            
                         } else if (line.contains("!auto")) {
                             mccbi.setEventPrintMode(true);
-
+                            
                         } else if (line.contains("!end")) {
                             //provisorisch
                             Thread.currentThread().interrupt();
                             break;
-
+                            
                         } else if (line.contains("bill")) {
                         } // .
                         // .
@@ -139,33 +140,43 @@ public class ManagementClient implements Runnable {
                             String login = split[1];
                             String pass = split[2];
                             if (billing.login(login, pass) != null) {
-                                BillingServerSecure bss = billing.login(login, pass);
+                                bss = billing.login(login, pass);
                                 logger.info("USER " + login + " was sucessfully logged in!");
                             } else {
                                 logger.info("USER " + login + " not logged in! Wrong username or password.");
                             }
+                        } else if (line.contains("!steps")) {
+                            System.out.println(bss.getPriceSteps().toString());
+                        } else if (line.contains("!addStep")) {
+                            String[] split = line.split(" ");
+                            double min_price = Double.parseDouble(split[1]);
+                            double max_price = Double.parseDouble(split[2]);
+                            double fee_fix = Double.parseDouble(split[3]);
+                            double fee_var = Double.parseDouble(split[4]);
+                            bss.createPriceStep(min_price, max_price, fee_fix, fee_var);
+                        } else if (line.contains("!removeStep")) {
+                            String[] split = line.split(" ");
+                            double min_price = Double.parseDouble(split[1]);
+                            double max_price = Double.parseDouble(split[2]);
+                            bss.deletePriceStep(min_price, max_price);
+                        } else {
+                            logger.info("Wrong command.");
                         }
-//                        else if(line.contains("!priceSteps")){
-//                            mccbi.getPriceSteps();
-//                            
-//                        }
                     }
                 } catch (Exception e) {
                     logger.info("Inside exception");
                     logger.catching(e);
+                    e.printStackTrace();
                 }
             }
-
+            
         } catch (Exception ex) {
             logger.catching(ex);
             System.out.print("ERROR:" + ex.getMessage());
         }
     }
     
-    
-    
-     private  synchronized long getID()
-    {
+    private synchronized long getID() {
         return counter++;
     }
 }
