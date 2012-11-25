@@ -9,6 +9,8 @@ import Event.Event;
 import RMI.ManagementClientCallBackInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.concurrent.LinkedBlockingQueue;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -17,53 +19,56 @@ import java.rmi.server.UnicastRemoteObject;
 public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implements AnalyticsServerInterface {
     
     private static long counter=0;
-    private ManagementClientCallBackInterface mclient=null;
-    String filter =null;
-    
+    private LinkedBlockingQueue<Task> outgoingchannel=null;
+    LinkedBlockingQueue<Event> distributorchannel=null;
+    private Logger logger=null;
     
     public AnalyticsServerInterfaceImpl() throws RemoteException {
         super();
     }
 
+    public void initialize(LinkedBlockingQueue<Task> amschannel,LinkedBlockingQueue<Event> distributorchannel)
+    {
+        logger=Logger.getLogger(AnalyticsServerInterfaceImpl.class);
+        this.outgoingchannel=amschannel;
+        this.distributorchannel=distributorchannel;
+    }
 
     @Override
     public void processEvents(Event e) throws RemoteException {
-        System.out.println("Event was passed:\n" + e.toString());
-        if(mclient!=null)
-        {
-            mclient.processEvent(e.toString());
-        }
+        logger.debug("RMI send an Event to the distributorChannel.");
+        this.distributorchannel.offer(e);
     }
 
     @Override
     public long subscribe(ManagementClientCallBackInterface mclient,String filter) throws RemoteException {
         //throw new UnsupportedOperationException("Not supported yet.");
-        long id=this.getNewAuctionID();
+        long id=this.getNewSubscribtionID();
         
-        this.mclient=mclient;
-        this.filter=filter;
-        
-        System.out.println("A Management Client has done a subscription with filter:"+filter);
-        
+        Task.SUBSCRIBER subscriber=new Task.SUBSCRIBER(mclient,filter);
+        Task task = new Task(subscriber);
+        logger.debug("RMI send an Suscriber Task to the AnalyticsManagementSystem.");
+        this.outgoingchannel.offer(task);
         
         return id;
         
     }
 
     @Override
-    public boolean unsubscribe(long subsciptionID) throws RemoteException {
-        boolean success=true;
+    public void unsubscribe(long subsciptionID) throws RemoteException {
         
+        Task.UNSUBSCRIBER unsubscriber = new Task.UNSUBSCRIBER(subsciptionID);
+        Task task = new Task(unsubscriber);
+        logger.debug("RMI send an UnSuscriber Task to the AnalyticsManagementSystem.");
+        this.outgoingchannel.offer(task);
         
-        
-        return success;
     }
-
     
-    private synchronized long getNewAuctionID()
+    
+    private synchronized long getNewSubscribtionID()
     {
       return AnalyticsServerInterfaceImpl.counter++;  
     }
-
+   
     
 }
