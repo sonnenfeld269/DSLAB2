@@ -141,9 +141,12 @@ public class ManagementClient implements Runnable {
                             String[] split = line.split(" ");
                             String login = split[1];
                             String pass = split[2];
-                            logger.debug("Command login: " + login + " : " + pass);
-                            BillingServerSecure bss = billing.login(login, pass);
-                            logger.info("Created BillingServerSecure " + bss.getPriceSteps());
+                            if (billing.login(login, pass) != null) {
+                                BillingServerSecure bss = billing.login(login, pass);
+                                logger.info("USER " + login + " was sucessfully logged in!");
+                            } else {
+                                logger.info("USER " + login + " not logged in! Wrong username or password.");
+                            }
                         }
 //                        else if(line.contains("!priceSteps")){
 //                            mccbi.getPriceSteps();
