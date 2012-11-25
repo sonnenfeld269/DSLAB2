@@ -4,13 +4,14 @@
  */
 package AnalyticsServer;
 
-import RMI.AnalyticsServerInterface;
 import Event.Event;
+import RMI.AnalyticsServerInterface;
 import RMI.ManagementClientCallBackInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -29,7 +30,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
 
     public void initialize(LinkedBlockingQueue<Task> amschannel,LinkedBlockingQueue<Event> distributorchannel)
     {
-        logger=Logger.getLogger(AnalyticsServerInterfaceImpl.class);
+        logger=LogManager.getLogger(AnalyticsServerInterfaceImpl.class);
         this.outgoingchannel=amschannel;
         this.distributorchannel=distributorchannel;
     }
@@ -68,7 +69,6 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     private synchronized long getNewSubscribtionID()
     {
       return AnalyticsServerInterfaceImpl.counter++;  
-    }
-   
+    } 
     
 }
