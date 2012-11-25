@@ -10,7 +10,9 @@ import RMI.ManagementClientCallBackInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -19,7 +21,8 @@ import org.apache.log4j.Logger;
 public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implements AnalyticsServerInterface {
     
     private static long counter=0;
-    private LinkedBlockingQueue<Task> outgoingchannel=null;
+    private LinkedBlockingQueue<Task> ToAmsChannel=null;
+    private LinkedBlockingQueue<Task.RESULT> FromAmsChannel=null;
     LinkedBlockingQueue<Event> distributorchannel=null;
     private Logger logger=null;
     
@@ -27,10 +30,12 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         super();
     }
 
-    public void initialize(LinkedBlockingQueue<Task> amschannel,LinkedBlockingQueue<Event> distributorchannel)
+    public void initialize(LinkedBlockingQueue<Task> ToAmsChannel,LinkedBlockingQueue<Task.RESULT> FromAmsChannel,LinkedBlockingQueue<Event> distributorchannel)
     {
-        logger=Logger.getLogger(AnalyticsServerInterfaceImpl.class);
-        this.outgoingchannel=amschannel;
+       
+        logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
+        this.ToAmsChannel=ToAmsChannel;
+        this.FromAmsChannel=FromAmsChannel;
         this.distributorchannel=distributorchannel;
     }
 
@@ -44,11 +49,17 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     public long subscribe(ManagementClientCallBackInterface mclient,String filter) throws RemoteException {
         //throw new UnsupportedOperationException("Not supported yet.");
         long id=this.getNewSubscribtionID();
-        
+        boolean b=false;
         Task.SUBSCRIBER subscriber=new Task.SUBSCRIBER(mclient,filter);
         Task task = new Task(subscriber);
         logger.debug("RMI send an Suscriber Task to the AnalyticsManagementSystem.");
-        this.outgoingchannel.offer(task);
+        this.ToAmsChannel.offer(task);
+        try {
+            b=getResultFromAMS(id);
+        } catch (InterruptedException ex) {
+            logger.catching(ex);
+        }
+        
         
         return id;
         
@@ -60,7 +71,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         Task.UNSUBSCRIBER unsubscriber = new Task.UNSUBSCRIBER(subsciptionID);
         Task task = new Task(unsubscriber);
         logger.debug("RMI send an UnSuscriber Task to the AnalyticsManagementSystem.");
-        this.outgoingchannel.offer(task);
+        this.ToAmsChannel.offer(task);
         
     }
     
@@ -68,6 +79,27 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     private synchronized long getNewSubscribtionID()
     {
       return AnalyticsServerInterfaceImpl.counter++;  
+    }
+    
+    private boolean getResultFromAMS(long subscriptionID) throws InterruptedException
+    {
+        boolean b=false;
+        
+        while(true)
+        {
+            Task.RESULT result = FromAmsChannel.take();
+            if(result.subscriptionID!=subscriptionID)
+            {
+                FromAmsChannel.add(result);
+            }
+            else
+            {
+                b=result.success;
+                break;
+            }
+                       
+        }
+        return b;
     }
    
     

@@ -28,7 +28,7 @@ public class MClientHandler implements Runnable{
         this.filter=filter;
         this.mccbi=mccbi;
         this.lbq=lbq;
-        logger = LogManager.getLogger(MClientHandler.class.getSimpleName());
+        logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+MClientHandler.class.getSimpleName());
     }
     
     public void run()

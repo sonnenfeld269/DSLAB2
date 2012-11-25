@@ -73,5 +73,17 @@ import RMI.ManagementClientCallBackInterface;
             }
         
         }
+        
+        public static class RESULT
+        {
+        
+            public boolean success;
+            public long subscriptionID;
+            public RESULT(boolean success,long subscriptionID)
+            {
+                this.success=success;
+                this.subscriptionID=subscriptionID;
+            }
+        }
     
     }

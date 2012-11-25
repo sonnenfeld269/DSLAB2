@@ -34,8 +34,9 @@ public class AnalyticsServer implements Runnable{
     private RMIRegistry registry=null;
     private AnalyticsServerInterface asi=null;
     private ExecutorService pool=null;
-    LinkedBlockingQueue<Task> amsincomechannel=null;
-    LinkedBlockingQueue<Event> distributorincomechannel=null;
+    private LinkedBlockingQueue<Task> rmitoamsincomechannel=null;
+    private LinkedBlockingQueue<Task.RESULT> amstormisoutcomechannel=null;
+    private LinkedBlockingQueue<Event> distributorincomechannel=null;
     private AnalyticsServerInterfaceImpl ASII=null;
     private AnalyticsManagementSystem AMS =null; 
     public AnalyticsServer (String propertyFile)
@@ -53,12 +54,13 @@ public class AnalyticsServer implements Runnable{
             }
             
             //create objects necessary for management
-            amsincomechannel=new LinkedBlockingQueue<Task>();
+            rmitoamsincomechannel=new LinkedBlockingQueue<Task>();
+            amstormisoutcomechannel=new LinkedBlockingQueue<Task.RESULT>();
             distributorincomechannel=new LinkedBlockingQueue<Event>();
             ASII=new AnalyticsServerInterfaceImpl();
-            ASII.initialize(amsincomechannel,distributorincomechannel);
+            ASII.initialize(rmitoamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
             pool= Executors.newCachedThreadPool();
-            AMS = new AnalyticsManagementSystem(pool,amsincomechannel);
+            AMS = new AnalyticsManagementSystem(pool,rmitoamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
             //start objects necessary for management
             pool.execute(AMS);
            

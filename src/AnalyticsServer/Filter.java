@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -17,11 +19,13 @@ import java.util.regex.Pattern;
 public class Filter {
     private static long counter=0;
     private long filterID;
+    private Logger logger=null;
     private ConcurrentHashMap<Long,Pattern> RegexFilterMap=null;
    
     
     public Filter()
     {
+        this.logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+Filter.class.getSimpleName());
         filterID=getnewID();
         RegexFilterMap= new ConcurrentHashMap<Long,Pattern>();
     
@@ -30,7 +34,7 @@ public class Filter {
     boolean checkMessage(String message)
     {
        Iterator<Map.Entry<Long,Pattern>> iter = this.RegexFilterMap.entrySet().iterator();
-        
+       logger.debug("Check message: '"+message+"' in the filtersystem.");
         while(iter.hasNext())
         {
             Map.Entry<Long,Pattern> entry = iter.next();
@@ -53,7 +57,7 @@ public class Filter {
     
     public boolean subscribeRegex(Long id,Pattern pattern)
     {
-        
+        logger.debug("Subscribe Regex:'"+pattern.toString()+"' with id "+id+".");
         this.RegexFilterMap.put(id, pattern);
         if(RegexFilterMap.containsKey(id))
             return true;
@@ -63,7 +67,7 @@ public class Filter {
     
     public boolean subscribeRegex(Long id,String regex)
     {
-        
+        logger.debug("Subscribe Regex:'"+regex+"' with id "+id+".");
         this.RegexFilterMap.put(id, Pattern.compile(regex));
         if(RegexFilterMap.containsKey(id))
             return true;
@@ -74,7 +78,7 @@ public class Filter {
     
     public boolean  unsubscribeRegex(Long id)
     {
-      
+      logger.debug("Unsubscribe Subscription ID "+id+".");
       if((this.RegexFilterMap.remove(id))!=null)
          return true;
       else 
