@@ -122,13 +122,12 @@ public class ManagementClient implements Runnable {
                             logger.exit();
                         }else if (line.contains("!unsubscribe")
                                 && this.analyticIsAvaible) {
-                           logger.entry();
+                            logger.entry();
 
-                           
-                            String[] s = line.split(" ");
-                            long id = Long.getLong(s[1]);
                             try {
                                 boolean b;
+                                String[] s = line.split(" ");
+                                long id = Long.getLong(s[1]);
                                 logger.debug("Send request to unsubscribe ID "
                                         +id);
                                 b = analytic.unsubscribe(id);
@@ -146,7 +145,9 @@ public class ManagementClient implements Runnable {
                                         + "run:unsubscribe:RemoteException:"
                                         + ex.getMessage());
                             } catch (Exception e) {
-                                System.out.print("ERROR:" + e.getMessage());
+                                logger.error("Error:managmentClient:"
+                                        + "run:unsubscribe:"+e.getMessage());
+                                //System.out.print("ERROR:" + e.getMessage());
                             }
                           logger.exit();
 

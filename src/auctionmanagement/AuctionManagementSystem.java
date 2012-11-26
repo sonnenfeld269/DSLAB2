@@ -219,7 +219,7 @@ public class AuctionManagementSystem implements Runnable{
                                 +"\nType:BID_WON",3);
                     }
                   //rmiAnalyticsAvaible
-                 }else if(rmiBillingAvailable)
+                 }if(rmiBillingAvailable)
                  {
                 /*BillingServer RMI Method Invocation*/
 
