@@ -16,7 +16,7 @@ import org.apache.logging.log4j.Logger;
  * @author Dave
  */
 public class ManagementClient implements Runnable {
-    
+
     private static long counter = 0;
     private Logger logger = null;
     private RMIRegistry registry = null;
@@ -25,9 +25,9 @@ public class ManagementClient implements Runnable {
     private BillingServerInterface billing = null;
     private BillingServerSecure bss = null;
     private boolean init = true;
-    private boolean analyticIsAvaible=false;
-    private boolean billingIsAvaible=false;
-    
+    private boolean analyticIsAvaible = false;
+    private boolean billingIsAvaible = false;
+
     public ManagementClient(String propertyFile) {
         try {
             logger = LogManager.getLogger(ManagementClient.class.getSimpleName());
@@ -40,15 +40,14 @@ public class ManagementClient implements Runnable {
             /**
              * ***AnalyticServer Part*******
              */
-            try{
+            try {
                 analytic = registry.getAnalyticsInterface();
                 mccbi = new ManagementClientCallBackInterfaceImpl();
                 mccbi.initializeManagementClient(this.getID(), logger);
-                analyticIsAvaible=true;
-            }catch(RMIRegistryException ex)
-            {
+                analyticIsAvaible = true;
+            } catch (RMIRegistryException ex) {
                 this.logger.error("Error:Analytics Server not avaible.");
-                analyticIsAvaible=false;
+                analyticIsAvaible = false;
             }
             /**
              * ***AnalyticServer Part*******
@@ -56,13 +55,12 @@ public class ManagementClient implements Runnable {
             /**
              * ***BillingServer initialization Part*******
              */
-            try{
+            try {
                 billing = registry.getBillingInterface();
-                billingIsAvaible=true;
-            }catch(RMIRegistryException ex)
-            {
+                billingIsAvaible = true;
+            } catch (RMIRegistryException ex) {
                 this.logger.error("Error:Billing Server not avaible.");
-                billingIsAvaible=false;
+                billingIsAvaible = false;
             }
             /**
              * ***BillingServer Part*******
@@ -71,106 +69,101 @@ public class ManagementClient implements Runnable {
             this.logger.error("ManagementClient:Constructor:Exception:" + ex.getMessage());
             init = false;
         }
-        
+
     }
-    
+
     public void run() {
         try {
             logger.info("ManagementClientHandle started...");
             String line = null;
             // System.out.print("\n>");
 
-            
+
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             while (!Thread.currentThread().isInterrupted() && init) {
                 /**
                  * ***Analytics und Billing Eingaben****
                  */
-               
                 System.out.print("\n>");
-                
+
                 try {
                     while ((line = in.readLine()) != null) {
                         System.out.print("\n>");
-                        if (line.contains("!subscribe")&&this.analyticIsAvaible) {
+                        if (line.contains("!subscribe") && this.analyticIsAvaible) {
                             String[] s = line.split(" ");
                             if (s.length >= 2) {
                                 long sub_id = 0;
                                 int position1 = line.indexOf('\'', 0);
                                 int position2 = line.indexOf('\'', position1 + 1);
                                 String regex = line.substring(position1 + 1, position2);
-                                try{
+                                try {
                                     sub_id = analytic.subscribe(mccbi, regex);
                                     System.out.print("Created subscription with ID " + sub_id
                                             + " for events using filter"
                                             + " '"
                                             + regex
                                             + "' ");
-                                }catch(RemoteException ex)
-                                {
+                                } catch (RemoteException ex) {
                                     System.out.print("Error:managmentClient:"
-                                            +"run:subscribe:RemoteException:"
-                                            +ex.getMessage());
+                                            + "run:subscribe:RemoteException:"
+                                            + ex.getMessage());
                                 }
                             }
-                            
+
                         } else if (line.contains("!unsubscribe")
-                                &&this.analyticIsAvaible) {
-                            
+                                && this.analyticIsAvaible) {
+
                             try {
                                 String[] s = line.split(" ");
                                 long id = Long.getLong(s[1]);
-                                try{
+                                try {
                                     boolean b;
-                                    b=analytic.unsubscribe(id);
-                                    if(b)
-                                    {
-                                    System.out.print("subscription"
-                                            + id
-                                            + "terminated ");
-                                    }else
-                                    {
-                                        System.out.print("Error:unsubscribe id " 
-                                            + id
-                                            + "was not successfull.");
+                                    b = analytic.unsubscribe(id);
+                                    if (b) {
+                                        System.out.print("subscription"
+                                                + id
+                                                + "terminated ");
+                                    } else {
+                                        System.out.print("Error:unsubscribe id "
+                                                + id
+                                                + "was not successfull.");
                                     }
-                                }catch(RemoteException ex)
-                                {
+                                } catch (RemoteException ex) {
                                     System.out.print("Error:managmentClient:"
-                                            +"run:unsubscribe:RemoteException:"
-                                            +ex.getMessage());
+                                            + "run:unsubscribe:RemoteException:"
+                                            + ex.getMessage());
                                 }
-                                
-                                
+
+
                             } catch (Exception e) {
                                 System.out.print("ERROR:" + e.getMessage());
                             }
-                            
-                            
-                            
-                        } else if (line.contains("!print")&&this.analyticIsAvaible) {
+
+
+
+                        } else if (line.contains("!print") && this.analyticIsAvaible) {
                             if (!mccbi.getMode()) {
                                 mccbi.printBuffer();
                             }
-                        } else if (line.contains("!hide")&&this.analyticIsAvaible) {
+                        } else if (line.contains("!hide") && this.analyticIsAvaible) {
                             mccbi.setEventPrintMode(false);
-                            
-                        } else if (line.contains("!auto")&&this.analyticIsAvaible) {
+
+                        } else if (line.contains("!auto") && this.analyticIsAvaible) {
                             mccbi.setEventPrintMode(true);
-                            
-                        } else if (line.contains("!end")&&this.analyticIsAvaible) {
+
+                        } else if (line.contains("!end") && this.analyticIsAvaible) {
                             //provisorisch
                             Thread.currentThread().interrupt();
                             break;
-                            
-                        } else if (line.contains("bill")&&this.billingIsAvaible) {
+
+                        } else if (line.contains("bill") && this.billingIsAvaible) {
                         } // .
                         // .
                         // .
                         /**
                          * ***Analytics und Billing Eingaben****
                          */
-                        else if (line.contains("!login")&&this.billingIsAvaible) {
+                        else if (line.contains("!login") && this.billingIsAvaible) {
                             logger.info("INSIDE MANAGEMENT CLIENT - LOGIN METHOD");
                             String[] split = line.split(" ");
                             String login = split[1];
@@ -181,37 +174,53 @@ public class ManagementClient implements Runnable {
                             } else {
                                 logger.info("USER " + login + " not logged in! Wrong username or password.");
                             }
-                        } else if (line.contains("!steps")&&this.billingIsAvaible) {
+                        } else if (line.contains("!steps") && this.billingIsAvaible) {
                             System.out.println(bss.getPriceSteps().toString());
-                        } else if (line.contains("!addStep")&&this.billingIsAvaible) {
+                        } else if (line.contains("!addStep") && this.billingIsAvaible) {
                             String[] split = line.split(" ");
                             double min_price = Double.parseDouble(split[1]);
                             double max_price = Double.parseDouble(split[2]);
                             double fee_fix = Double.parseDouble(split[3]);
                             double fee_var = Double.parseDouble(split[4]);
                             bss.createPriceStep(min_price, max_price, fee_fix, fee_var);
-                        } else if (line.contains("!removeStep")&&this.billingIsAvaible) {
-                            String[] split = line.split(" ");
-                            double min_price = Double.parseDouble(split[1]);
-                            double max_price = Double.parseDouble(split[2]);
-                            bss.deletePriceStep(min_price, max_price);
-                        } else {
+                            System.out.println("Price step with values " + min_price + "," + max_price + " was created successfully.");
+                        } else if (line.contains("!removeStep") && this.billingIsAvaible) {
+                            try {
+                                String[] split = line.split(" ");
+                                double min_price = Double.parseDouble(split[1]);
+                                double max_price = Double.parseDouble(split[2]);
+                                bss.deletePriceStep(min_price, max_price);
+                                System.out.println("Price step with values " + min_price + "," + max_price + " was deleted successfully.");
+                            } catch (Exception e) {
+                                logger.error("Price step could not be deleted!");
+                            }
+                        } else if (line.contains("!bill") && this.billingIsAvaible) {
+                            try {
+                                String[] split = line.split(" ");
+                                String user = split[1];
+                                System.out.println("Bill of User " + user + " is as follows: \n" + bss.getBill(user).toString());
+                            } catch (Exception e) {
+                                logger.error("Price step could not be deleted!");
+                            }
+                        } else if (line.contains("!logout") && this.billingIsAvaible) {
+                            logger.debug("INSIDE MANAGEMENT CLIENT - LOGOUT METHOD");
+                            bss = null;
+                            logger.info("USER was sucessfully logged out!");
+                        }else {
                             logger.info("Wrong command.");
                         }
                     }
                 } catch (Exception e) {
-                    logger.info("Inside exception");
                     logger.catching(e);
-                    e.printStackTrace();
                 }
             }
-            
+
         } catch (Exception ex) {
             logger.catching(ex);
             System.out.print("ERROR:" + ex.getMessage());
         }
     }
-    
+
     private synchronized long getID() {
         return counter++;
     }

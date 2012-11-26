@@ -12,6 +12,7 @@ public class PriceStep implements Serializable{
     private double max_value;
     private double fee_fixed;
     private double fee_variable;
+    public String INFINITY = "INFINITY";
 
     public PriceStep(double min_value, double max_value, double fee_fixed, double fee_variable) {
         this.min_value = min_value;
@@ -19,7 +20,7 @@ public class PriceStep implements Serializable{
         this.fee_fixed = fee_fixed;
         this.fee_variable = fee_variable;
     }
-
+    
     public double getMin_value() {
         return min_value;
     }
@@ -54,7 +55,9 @@ public class PriceStep implements Serializable{
 
     @Override
     public String toString() {
+        if(max_value == 0){
+            return "PriceStep{" + "min_value=" + min_value + ", max_value=" + "INFINITY" + ", fee_fixed=" + fee_fixed + ", fee_variable=" + fee_variable + '}';
+        }
         return "PriceStep{" + "min_value=" + min_value + ", max_value=" + max_value + ", fee_fixed=" + fee_fixed + ", fee_variable=" + fee_variable + '}';
     }
-    
 }
