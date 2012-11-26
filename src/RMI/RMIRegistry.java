@@ -138,7 +138,7 @@ public class RMIRegistry {
              throw new RMIRegistryException("RemoteException:",ex);
         } catch (NotBoundException ex) {
             logger.error("RMIRegistry:getAnalyticsInterface:NotBoundException:"+ex.getMessage());
-             throw new RMIRegistryException("NotBoundException:",ex);
+            throw new RMIRegistryException("NotBoundException:",ex);
         } 
         
         return analytic;
@@ -155,9 +155,11 @@ public class RMIRegistry {
             billing=(BillingServerInterface) registry.lookup(BillingServerInterface.class.getSimpleName());
        
         } catch (RemoteException ex) {
-            logger.error("RMIRegistry:RemoteException:"+ex.getMessage());
+            logger.error("RMIRegistry:getBillingInterface:RemoteException:"+ex.getMessage());
+            throw new RMIRegistryException("RemoteException:",ex);
         } catch (NotBoundException ex) {
-            logger.error("RMIRegistry:NotBoundException:"+ex.getMessage());
+            logger.error("RMIRegistry:getBillingInterface:NotBoundException:"+ex.getMessage());
+            throw new RMIRegistryException("NotBoundException:",ex);
         } 
         
         return billing;

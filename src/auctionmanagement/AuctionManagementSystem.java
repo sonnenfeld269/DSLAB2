@@ -43,7 +43,9 @@ public class AuctionManagementSystem implements Runnable{
     private RMIRegistry registry=null;
     private AnalyticsServerInterface analytic=null;
     private BillingServerSecure billing=null;
-    boolean rmiAvailable;
+    boolean rmiAvailable=false;
+    boolean rmiAnalyticAvailable=false;
+    boolean rmiBillingAvailable=false;
     /*********** RMI *******************************/
     private CommandTask readRequest()
     {
@@ -75,24 +77,45 @@ public class AuctionManagementSystem implements Runnable{
         //this.pool.execute(NotificationServer);
         this.pool.execute(outgoingMessageServer);
         this.logger.output("AuctionManagementSystem created...", 2);
+        /*
+         * ***************RMI**********************
+         */
         try {
-            /*
-             * ***************RMI**********************
-             */
+            
              registry=new RMIRegistry(propertyFile);
-             analytic = registry.getAnalyticsInterface();
-             billing = registry.getBillingInterface().getBillingServerSecure();
-             rmiAvailable=true;
-             /*
-             * ***************RMI**********************
-             */
+             if(registry.getRegistry()!=null)
+             {
+                 rmiAvailable=true;
+                 try{
+                    analytic = registry.getAnalyticsInterface();
+                    rmiAnalyticAvailable=true;
+                 }catch(RMIRegistryException ex)
+                 {
+                     this.logger.output("AuctionManagementSystem:RMIRegistryException:"+ex.getMessage(), 2);
+                     analytic=null;
+                     rmiAnalyticAvailable=false;
+                 }
+
+                 try{
+                    billing = registry.getBillingInterface().getBillingServerSecure();
+                    rmiBillingAvailable=true;
+                 }catch(RMIRegistryException ex)
+                 {
+                     this.logger.output("AuctionManagementSystem:RMIRegistryException:"+ex.getMessage(), 2);
+                     billing=null;
+                     rmiBillingAvailable=false;
+                 }
+             
+             }
+            
+             
+ 
         } catch (RemoteException ex) {
            this.logger.output("AuctionManagementSystem:RemoteException:"+ex.getMessage(), 2);
-        } catch (RMIRegistryException ex) {
-           this.logger.output("AuctionManagementSystem:RMIRegistryException:"+ex.getMessage(), 2);
-        }
-        
-        
+        } 
+        /*
+         * ***************RMI**********************
+         */
         
     }
     //returns true if the queue had enogh space 
@@ -163,11 +186,15 @@ public class AuctionManagementSystem implements Runnable{
             else
                 bidder=account_map.get(this.auc.getHighestBidder());
             
-              /*********** RMI *******************************/
+          /*********** RMI *******************************/
             
-            if(rmiAvailable)
-            {
-                try {
+            
+            
+            try {
+              if(rmiAvailable)
+              {
+                 if(rmiAnalyticAvailable)
+                 {
                     analytic.processEvents(
                         new AuctionEvent(AuctionEvent.AuctionType.AUCTION_ENDED,
                             auc.getID())
@@ -191,23 +218,25 @@ public class AuctionManagementSystem implements Runnable{
                                 +"\nPrice:"+auc.getHighestBid()
                                 +"\nType:BID_WON",3);
                     }
+                  //rmiAnalyticsAvaible
+                 }else if(rmiBillingAvailable)
+                 {
+                /*BillingServer RMI Method Invocation*/
 
-                    /*BillingServer RMI Method Invocation*/
-                    
                     billing.billAuction(auc.getHighestBidder(),auc.getID(),auc.getHighestBid());
-                    
-                    /*BillingServer RMI Method Invocation*/
-                    
-                    
-                    
-                } catch (RemoteException ex) {
-                    logger.output("TimerTaskHandle:RMI:RemoteException:"+ex.getMessage(), 2);
-                }catch(NullPointerException e){
-                  logger.output("TimerTaskHandle:RMI:NullPointerException:"+e.getMessage());
-                }
-                
+
+                /*BillingServer RMI Method Invocation*/
+                 }//rmiBillingAvaible
+
+              }//rmiAvaible
+            } catch (RemoteException ex) {
+                logger.output("TimerTaskHandle:RMI:RemoteException:"+ex.getMessage(), 2);
+            }catch(NullPointerException e){
+              logger.output("TimerTaskHandle:RMI:NullPointerException:"+e.getMessage());
             }
-             /*********** RMI *******************************/                
+                
+            
+            /*********** RMI *******************************/                
             
           
             //Notification notificationOwner=null;
@@ -333,9 +362,10 @@ public class AuctionManagementSystem implements Runnable{
                                     "user "+commandtask.login.user, 3);
                            
                             /*********** RMI *******************************/
-                            if(rmiAvailable)
-                            {
-                                try{
+                            try{
+                                 if(rmiAvailable&&rmiAnalyticAvailable)
+                                 {
+
                                     analytic.processEvents(
                                         new UserEvent(commandtask.login.user,
                                             UserEvent.UserEventType.USER_LOGIN)
@@ -343,15 +373,17 @@ public class AuctionManagementSystem implements Runnable{
                                     logger.output("AMSHandlerThread:login:RMI"+
                                         ":processEvent:Invoke::"
                                             + "\nUser:"+commandtask.login.user,3);
-                                }catch(RemoteException e)
-                                {
-                                    logger.output("AMS_HandlerThread:login:RMI:RemoteException"
-                                            +":"+e.getMessage(), 2);
-                                }catch(NullPointerException e){
-                                   logger.output("AMS_HandlerThread:login:RMI:NullPointerException"
-                                            +":"+e.getMessage(), 2);
+
                                  }
+                            }catch(RemoteException e)
+                            {
+                                logger.output("AMS_HandlerThread:login:RMI:RemoteException"
+                                        +":"+e.getMessage(), 2);
+                            }catch(NullPointerException e){
+                               logger.output("AMS_HandlerThread:login:RMI:NullPointerException"
+                                        +":"+e.getMessage(), 2);
                             }
+                            
                             
                             /*********** RMI *******************************/
                             
@@ -375,25 +407,26 @@ public class AuctionManagementSystem implements Runnable{
                         logger.output("AMSHandlerThread:login finished:"+
                                     "user "+commandtask.login.client, 3);
                         /*********** RMI *******************************/
-                            if(rmiAvailable)
-                            {
-                                try{
-                                    analytic.processEvents(
-                                        new UserEvent(commandtask.login.user,
-                                            UserEvent.UserEventType.USER_LOGIN)
-                                        );
-                                    logger.output("AMSHandlerThread:login:RMI"+
-                                        ":processEvent:Invoke::"
-                                            + "\nUser:"+commandtask.login.user,3);
-                                }catch(RemoteException e)
-                                {
-                                    logger.output("AMS_HandlerThread:login:RMI:RemoteException"
-                                            +":"+e.getMessage(), 2);
-                                }catch(NullPointerException e){
-                                   logger.output("AMS_HandlerThread:login:RMI:NullPointerException"
-                                            +":"+e.getMessage(), 2);
-                                 }
+                        try{
+                           if(rmiAvailable&&rmiAnalyticAvailable)
+                           {
+
+                                analytic.processEvents(
+                                    new UserEvent(commandtask.login.user,
+                                        UserEvent.UserEventType.USER_LOGIN)
+                                    );
+                                logger.output("AMSHandlerThread:login:RMI"+
+                                    ":processEvent:Invoke::"
+                                        + "\nUser:"+commandtask.login.user,3);
                             }
+                        }catch(RemoteException e)
+                        {
+                            logger.output("AMS_HandlerThread:login:RMI:RemoteException"
+                                    +":"+e.getMessage(), 2);
+                        }catch(NullPointerException e){
+                           logger.output("AMS_HandlerThread:login:RMI:NullPointerException"
+                                    +":"+e.getMessage(), 2);
+                        }  
                             
                          /*********** RMI *******************************/
                     }
@@ -423,9 +456,10 @@ public class AuctionManagementSystem implements Runnable{
                             outgoingmessagechannel.offer(a);
                             
                             /*********** RMI *******************************/
-                            if(rmiAvailable)
-                            {
-                                try{
+                             try{
+                                if(rmiAvailable&&rmiAnalyticAvailable)
+                                {
+
                                     analytic.processEvents(
                                         new UserEvent(commandtask.logout.user,
                                             UserEvent.UserEventType.USER_LOGOUT)
@@ -433,15 +467,16 @@ public class AuctionManagementSystem implements Runnable{
                                     logger.output("AMSHandlerThread:logout:RMI"+
                                         ":processEvent:Invoke::"
                                             + "User:"+commandtask.logout.user,3);
-                                }catch(RemoteException e)
-                                {
+                                }
+                               }catch(RemoteException e)
+                               {
                                     logger.output("AMS_HandlerThread:logout:RMI:RemoteException:"
                                             +e.getMessage(), 2);
-                                }catch(NullPointerException e){
+                               }catch(NullPointerException e){
                                    logger.output("AMS_HandlerThread:logout:RMI:NullPointerException"
                                             +":"+e.getMessage(), 2);
-                                 }
-                            }
+                               }
+                           
                             
                          /*********** RMI *******************************/
                             
@@ -476,27 +511,29 @@ public class AuctionManagementSystem implements Runnable{
                     outgoingmessagechannel.offer(a);
                     
                     /*********** RMI *******************************/
-                            if(rmiAvailable)
-                            {
-                                try{
-                                    analytic.processEvents(
-                                        new AuctionEvent(AuctionEvent.AuctionType.AUCTION_STARTED,
-                                            auc.getID())
-                                        );
-                                    logger.output("AMSHandlerThread:create:RMI"+
-                                        ":processEvent:Invoke::"
-                                            + "AuctionID:"+auc.getID(),3);
-                                 }catch(RemoteException e)
-                                 {
-                                    logger.output("AMS_HandlerThread:RMI:create:RemoteException"
-                                            +":"+e.getMessage(), 2);
-                                 }catch(NullPointerException e){
-                                   logger.output("AMS_HandlerThread:create:RMI:NullPointerException"
-                                            +":"+e.getMessage(), 2);
-                                 }
-                            }
+                    try{
+                        if(rmiAvailable&&rmiAnalyticAvailable)
+                        {
+
+                            analytic.processEvents(
+                                new AuctionEvent(AuctionEvent.AuctionType.AUCTION_STARTED,
+                                    auc.getID())
+                                );
+                            logger.output("AMSHandlerThread:create:RMI"+
+                                ":processEvent:Invoke::"
+                                    + "AuctionID:"+auc.getID(),3);
+                        }
+                     }catch(RemoteException e)
+                     {
+                        logger.output("AMS_HandlerThread:RMI:create:RemoteException"
+                                +":"+e.getMessage(), 2);
+                     }catch(NullPointerException e){
+                       logger.output("AMS_HandlerThread:create:RMI:NullPointerException"
+                                +":"+e.getMessage(), 2);
+                     }
+                        
                             
-                         /*********** RMI *******************************/
+                     /*********** RMI *******************************/
                   
                 }
               }catch(NullPointerException e){
@@ -548,9 +585,10 @@ public class AuctionManagementSystem implements Runnable{
                         outgoingmessagechannel.offer(a);
                         
                         /*********** RMI *******************************/
-                            if(rmiAvailable)
-                            {
-                                try{
+                           try{    
+                                if(rmiAvailable&&rmiAnalyticAvailable)
+                                {
+                              
                                     analytic.processEvents(
                                         new BidEvent(auc.getHighestBidder(),
                                             auc.getID(),auc.getHighestBid(),
@@ -562,15 +600,16 @@ public class AuctionManagementSystem implements Runnable{
                                             +"\nUser:"+auc.getHighestBidder()
                                             +"\nPrice:"+auc.getHighestBid()
                                             +"\nType:BID_PLACED",3);
-                                 }catch(RemoteException e)
-                                {
-                                    logger.output("AMS_HandlerThread:RMI:bid:RemoteException"
-                                            +":"+e.getMessage(), 2);
-                                }catch(NullPointerException e){
-                                    logger.output("AMS_HandlerThread:RMI:bid:NullPointerException"
-                                        +":"+e.getMessage(), 2);
                                 }
+                            }catch(RemoteException e)
+                            {
+                                logger.output("AMS_HandlerThread:RMI:bid:RemoteException"
+                                        +":"+e.getMessage(), 2);
+                            }catch(NullPointerException e){
+                                logger.output("AMS_HandlerThread:RMI:bid:NullPointerException"
+                                    +":"+e.getMessage(), 2);
                             }
+                            
                             
                          /*********** RMI *******************************/
                         
@@ -595,9 +634,10 @@ public class AuctionManagementSystem implements Runnable{
                             */
                             
                             /*********** RMI *******************************/
-                            if(rmiAvailable)
-                            {
-                                try{
+                            try{
+                                if(rmiAvailable&&rmiAnalyticAvailable)
+                                {
+                               
                                     analytic.processEvents(
                                         new BidEvent(oldBidder.getName(),
                                             auc.getID(),
@@ -610,15 +650,16 @@ public class AuctionManagementSystem implements Runnable{
                                             +"\nUser:"+auc.getHighestBidder()
                                             +"\nPrice:"+auc.getHighestBid()
                                             +"\nType:BID_OVERBID",3);
-                                 }catch(RemoteException e)
-                                {
-                                    logger.output("AMS_HandlerThread:RMI:bid:RemoteException"
-                                            +":"+e.getMessage(), 2);
-                                }catch(NullPointerException e){
-                                    logger.output("AMS_HandlerThread:RMI:bid:NullPointerException"
-                                        +":"+e.getMessage(), 2);
                                 }
+                            }catch(RemoteException e)
+                            {
+                                logger.output("AMS_HandlerThread:RMI:bid:RemoteException"
+                                        +":"+e.getMessage(), 2);
+                            }catch(NullPointerException e){
+                                logger.output("AMS_HandlerThread:RMI:bid:NullPointerException"
+                                    +":"+e.getMessage(), 2);
                             }
+                          
                             
                          /*********** RMI *******************************/
                             
@@ -672,9 +713,10 @@ public class AuctionManagementSystem implements Runnable{
                                    logger.output("AMSHandlerThread:end:USER_DISCONNECTED:"+"\n"
                                            + "User "+auc.getName()+" was still logged in.",2);
                                     /*********** RMI *******************************/
-                                    if(rmiAvailable)
-                                    {
-                                        try{
+                                   try{ 
+                                        if(rmiAvailable&&rmiAnalyticAvailable)
+                                        {
+                                        
                                             analytic.processEvents(
                                                 new UserEvent(auc.getName(),
                                                     UserEvent.UserEventType.USER_DISCONNECTED)
@@ -684,16 +726,17 @@ public class AuctionManagementSystem implements Runnable{
                                                 ":processEvent:Invoke::"
                                                     +"\nUser:"+auc.getName()
                                                     +"\nType:USER_DISCONNECTED",3);
-                                         }catch(RemoteException e)
-                                        {
-                                            logger.output("AMS_HandlerThread:RMI:end:RemoteException"
-                                                    +":"+e.getMessage(), 2);
-                                        }catch(NullPointerException e)
-                                        {
-                                            logger.output("AMS_HandlerThread:RMI:end:NullPointerException"
-                                                    +":"+e.getMessage(), 2);
                                         }
+                                    }catch(RemoteException e)
+                                    {
+                                        logger.output("AMS_HandlerThread:RMI:end:RemoteException"
+                                                +":"+e.getMessage(), 2);
+                                    }catch(NullPointerException e)
+                                    {
+                                        logger.output("AMS_HandlerThread:RMI:end:NullPointerException"
+                                                +":"+e.getMessage(), 2);
                                     }
+                                    
 
                                  /*********** RMI *******************************/
 

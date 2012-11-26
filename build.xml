@@ -14,8 +14,8 @@
     <property name="mgmtclient.name" value="ManagementClient"/><!-- Management Client's full class name (including the package) -->
     <property name="analytics.name" value="./src/AnalyticsServer/AnalyticsServer.java"/><!-- Analytics Server's full class name (including the package) -->
     <property name="billing.name" value="./src/BillingServer/BillingServer.java"/><!-- Billing Server's full class name (including the package) -->
-    <property name="analytics.bindingName" value="./src/RMI/AnalyticsServerInterface"/><!-- RMI Binding Name of the Analytics Server -->
-    <property name="billing.bindingName" value="./src/RMI/BillingsServerInterface"/><!-- RMI Binding Name of the Billing Server -->
+    <property name="analytics.bindingName" value="AnalyticsServerInterface"/><!-- RMI Binding Name of the Analytics Server -->
+    <property name="billing.bindingName" value="BillingsServerInterface"/><!-- RMI Binding Name of the Billing Server -->
     <property name="server.port" value="14450"/><!-- TCP port -->
 
     <path id="project.classpath">
