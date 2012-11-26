@@ -15,7 +15,9 @@ import RMI.ManagementClientCallBackInterface;
        
             private SUBSCRIBER   subscriber=null;
             private UNSUBSCRIBER unsubscriber=null;
+            private REMOTEERROR  remoteerror=null;
             private boolean isSubscriber;
+            private boolean isRemoteError;
         
         public Task(SUBSCRIBER   subscriber)
         {
@@ -29,9 +31,23 @@ import RMI.ManagementClientCallBackInterface;
            this.unsubscriber=unsubscriber; 
         }
         
+        public Task(REMOTEERROR   error)
+        {
+            isSubscriber=false;
+            isRemoteError=true;
+            this.remoteerror=error;
+           
+        }
+        
+        
         public boolean isSubscriber()
         {
             return this.isSubscriber;
+        }
+        
+        public boolean isRemoteError()
+        {
+            return this.isRemoteError;
         }
         
         public SUBSCRIBER getSubscriber()
@@ -47,6 +63,11 @@ import RMI.ManagementClientCallBackInterface;
                 return this.unsubscriber;
             else return null;
         }
+        public REMOTEERROR getRemoteError()
+        {
+            return this.remoteerror;
+        }
+        
     
         public static class SUBSCRIBER
         {
@@ -86,6 +107,23 @@ import RMI.ManagementClientCallBackInterface;
                 this.success=success;
                 this.subscriptionID=subscriptionID;
             }
+        }
+        
+        public static class REMOTEERROR
+        {
+            public long ClientID;
+            public Filter filter=null;
+            public ManagementClientCallBackInterface mccbi=null;
+            public REMOTEERROR(long ClientID,
+                        Filter filter,
+                        ManagementClientCallBackInterface mccbi)
+            {
+                this.ClientID=ClientID;
+                this.filter=filter;
+                this.mccbi=mccbi;
+                
+            }
+    
         }
     
     }

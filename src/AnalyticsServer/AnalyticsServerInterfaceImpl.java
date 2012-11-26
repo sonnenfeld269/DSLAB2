@@ -56,11 +56,16 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         logger.debug("AnalyticsServerInterfaceImpl:RMI send an Suscriber Task to the AnalyticsManagementSystem.");
         this.ToAmsChannel.offer(task);
         try {
+            logger.info("Wait for subscribe resul status.");
             b=getResultFromAMS(id);
+            logger.info("Get result status "+b+" from AnalyticManagementSystem"
+                    +"for subscription ID "+id);
         } catch (InterruptedException ex) {
             logger.catching(ex);
         }
-        
+        if(!b)
+            throw new RemoteException("Subscription of ID "+id+"with Filter "
+                    +filter+" was not successfull.");
         
         return id;
         
@@ -74,7 +79,10 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         logger.debug("AnalyticsServerInterfaceImpl:RMI send an UnSuscriber Task to the AnalyticsManagementSystem.");
         this.ToAmsChannel.offer(task);
         try{
+            logger.info("Wait for unsubscribe resul status.");
             b=getResultFromAMS(subsciptionID);
+            logger.info("Get result status "+b+" from AnalyticManagementSystem"
+                    +"for subscription ID "+subsciptionID);
         }catch(InterruptedException ex)
         {
              logger.catching(ex);
