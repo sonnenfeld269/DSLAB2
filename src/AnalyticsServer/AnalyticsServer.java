@@ -16,6 +16,8 @@ import java.rmi.RemoteException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +28,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Dave
  */
-public class AnalyticsServer implements Runnable{
+public class AnalyticsServer {
 
     //private static final int standardPORT = 1099;
     
@@ -57,15 +59,15 @@ public class AnalyticsServer implements Runnable{
             rmitoamsincomechannel=new LinkedBlockingQueue<Task>();
             amstormisoutcomechannel=new LinkedBlockingQueue<Task.RESULT>();
             distributorincomechannel=new LinkedBlockingQueue<Event>();
-            ASII=new AnalyticsServerInterfaceImpl();
-            ASII.initialize(rmitoamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
+            
             pool= Executors.newCachedThreadPool();
             AMS = new AnalyticsManagementSystem(pool,rmitoamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
             //start objects necessary for management
             pool.execute(AMS);
-           
             
-           
+            ASII=new AnalyticsServerInterfaceImpl();
+            ASII.initialize(rmitoamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
+
             /**
              * Register all neccessary RemoteObjects to the registry
              **/
@@ -99,8 +101,37 @@ public class AnalyticsServer implements Runnable{
             } catch (IOException e) {
                 
             }
-        }  
+        } 
         
+        this.close();      
+        logger.info("AnalyticServerHandle close...");  
+    }
+    
+    
+    
+    public void close()
+    {
+        this.AMS.close();
+        if(!pool.isShutdown())
+        pool.shutdown(); // Disable new tasks from being submitted
+        try {
+         // Wait a while for existing tasks to terminate
+             if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
+               pool.shutdownNow(); // Cancel currently executing tasks
+               // Wait a while for tasks to respond to being cancelled
+
+             }
+         } catch (InterruptedException ie) {
+         // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+         // Preserve interrupt status
+            Thread.currentThread().interrupt();
+         } 
+        try {
+            this.registry.deregisterObject(AnalyticsServerInterface.class.getSimpleName());
+        } catch (RMIRegistryException ex) {
+           this.logger.error("Unbind AnalyticServerInterface from Registry not successfull.");
+        }
 
     }
 

@@ -92,14 +92,36 @@ public class RMIRegistry {
             registry.rebind(name, remoteObj);
             //System.out.println("Registered: " + name + " -> " + remoteObj.getClass().getName() + "[" + remoteObj + "]");
             String msg = "RMIRegistry:RegisterObject: " + name + " -> " + remoteObj.getClass().getName() + "[" + remoteObj + "]";
-            logger.info(msg);
+            logger.debug(msg);
         }catch(RemoteException ex)
         {
-             logger.error("RMIRegistry:registerObject:RemoteException:"+ex.getMessage());
+            logger.catching(ex);
             throw new RMIRegistryException("RemoteException:",ex);
         }
         
     }
+    
+    public void deregisterObject(String name)throws RMIRegistryException
+    {
+        if(registry==null)
+                throw new RMIRegistryException("No registry located.");
+        try{   
+            registry.unbind(name);
+        }catch(NotBoundException ex)
+        {
+           logger.catching(ex);
+           throw new RMIRegistryException("NotBoundException:",ex);
+        }catch(RemoteException ex)
+        {
+             logger.catching(ex);
+             throw new RMIRegistryException("RemoteException:",ex);
+            
+        }
+    
+    }
+    
+    
+    
     
     public AnalyticsServerInterface getAnalyticsInterface() throws RMIRegistryException 
     {

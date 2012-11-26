@@ -51,12 +51,14 @@ import RMI.ManagementClientCallBackInterface;
         public static class SUBSCRIBER
         {
             public ManagementClientCallBackInterface mccbi; 
+            public long subscribeID;
             public String regex;
              
-            public SUBSCRIBER(ManagementClientCallBackInterface mccbi,String regex)
+            public SUBSCRIBER(ManagementClientCallBackInterface mccbi,long subscribeID,String regex)
             {
                 this.mccbi=mccbi;
                 this.regex=regex;
+                this.subscribeID=subscribeID;
             }
              
         

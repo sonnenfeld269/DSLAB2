@@ -4,6 +4,7 @@
  */
 package AnalyticsServer;
 
+import Event.AnalyticsControllEvent;
 import Event.Event;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,6 +38,11 @@ public class MessageDistributor implements Runnable{
             try {
                 
                event=incomingchannel.take();
+               if(event.getType().contains(AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_DISTRIBUTOR.name()))
+               {
+                   Thread.currentThread().interrupt();
+                   break;
+               }
                if(!this.outcomingdistributor.isEmpty())
                {
                    
@@ -59,7 +65,7 @@ public class MessageDistributor implements Runnable{
             }             
         
         }
-    
+     this.close();
      logger.exit();
     }
    
@@ -84,8 +90,11 @@ public class MessageDistributor implements Runnable{
     public  void deregisterOutcomingMember(Long id)
     {
         logger.entry();
-        this.outcomingdistributor.remove(id);
-        logger.debug("Remove queue from outcomingdistributor.");
+        LinkedBlockingQueue<Event> out=this.outcomingdistributor.remove(id);
+        out.offer(new AnalyticsControllEvent(id.longValue(),
+                AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_FILTER));
+        logger.debug("Removed queue from outcomingdistributor "
+                +"and send close message to Handler.");
         logger.exit();
     }
     
@@ -96,5 +105,11 @@ public class MessageDistributor implements Runnable{
         logger.entry();
         logger.exit();
         return new Long(counter++);
+    }
+    
+    
+    public void close()
+    {
+        logger.debug("Close  MessageDistributor");
     }
 }

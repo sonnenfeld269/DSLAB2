@@ -18,13 +18,15 @@ import org.apache.logging.log4j.Logger;
  */
 public class MClientHandler implements Runnable{
     
+    private long ClientID;
     private Filter filter=null;
     private ManagementClientCallBackInterface mccbi=null;
     private LinkedBlockingQueue<Event> lbq=null;
     private Logger logger=null;
     
-    public MClientHandler(Filter filter,ManagementClientCallBackInterface mccbi,LinkedBlockingQueue<Event> lbq)
+    public MClientHandler(long ClientID,Filter filter,ManagementClientCallBackInterface mccbi,LinkedBlockingQueue<Event> lbq)
     {
+        this.ClientID=ClientID;
         this.filter=filter;
         this.mccbi=mccbi;
         this.lbq=lbq;
@@ -41,10 +43,16 @@ public class MClientHandler implements Runnable{
             try {
                 
               event=lbq.take();
+              logger.debug("MClientHandler:Event message type "+event.getType()+" taken.");
               if(event.getType().contains(AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_FILTER.name()))
               {
-                  Thread.currentThread().interrupt();
-                  break;
+                  AnalyticsControllEvent asce=(AnalyticsControllEvent)event;
+                  if(asce.getIDNumber()==this.ClientID)
+                  {
+                    logger.debug("Event message leads to closing this Thread. ");
+                    Thread.currentThread().interrupt();
+                    break;
+                  }
                   
               }else if(filter.checkMessage(event.getType()))
               {
@@ -64,8 +72,18 @@ public class MClientHandler implements Runnable{
             }             
         
         }
-    
+     this.close();
      logger.exit();
 
     }
+    
+    
+    private void close()
+    {
+        
+        //close ressources if avaible
+        logger.debug("MClientHandler with filter ID "+this.filter.getFilterID()
+                +" is closing.");
+    }
+            
 }
