@@ -7,6 +7,7 @@ package AnalyticsServer;
 import Event.AnalyticsControllEvent;
 import Event.Event;
 import RMI.ManagementClientCallBackInterface;
+import java.rmi.RemoteException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
@@ -22,14 +23,20 @@ public class MClientHandler implements Runnable{
     private Filter filter=null;
     private ManagementClientCallBackInterface mccbi=null;
     private LinkedBlockingQueue<Event> lbq=null;
+    private LinkedBlockingQueue<Task> toamsincomechannel=null;
     private Logger logger=null;
     
-    public MClientHandler(long ClientID,Filter filter,ManagementClientCallBackInterface mccbi,LinkedBlockingQueue<Event> lbq)
+    public MClientHandler(long ClientID,
+            Filter filter,
+            ManagementClientCallBackInterface mccbi,
+            LinkedBlockingQueue<Event> lbq,
+            LinkedBlockingQueue<Task> toamsincomechannel)
     {
         this.ClientID=ClientID;
         this.filter=filter;
         this.mccbi=mccbi;
         this.lbq=lbq;
+        this.toamsincomechannel=toamsincomechannel;
         logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+MClientHandler.class.getSimpleName());
     }
     
@@ -62,16 +69,31 @@ public class MClientHandler implements Runnable{
               {
                  
                  mccbi.processEvent(event.toString()); 
-                 logger.debug("Send Event: "+event.getType()+" to ManagementClient.");
+                 logger.debug("Send Event: "+event.getType()+" to ManagementClient with Client ID "
+                         +this.ClientID+" .");
              
               }
                                            
               
             } catch (InterruptedException ex) {
-              logger.catching(ex);
+              //message queue was close from outside
+              logger.error("MClientHandler:InterruptedException:"+ex.getMessage());
               Thread.currentThread().interrupt();
-            }catch (Exception ex) {
-              logger.catching(ex);
+            }catch (RemoteException ex) {
+               //managementclient is not available anymore
+               Task.REMOTEERROR error=new Task.REMOTEERROR(this.ClientID,
+                       this.filter,
+                       this.mccbi);
+              this.toamsincomechannel.offer(new Task(error));
+              logger.error("MClientHandler:RemoteException:"+ex.getMessage());
+              Thread.currentThread().interrupt();
+            } catch (Exception ex) {
+              //a unknown exception
+               Task.REMOTEERROR error=new Task.REMOTEERROR(this.ClientID,
+                       this.filter,
+                       this.mccbi);
+              this.toamsincomechannel.offer(new Task(error));
+              logger.error("MClientHandler:Exception:"+ex.getMessage());
               Thread.currentThread().interrupt();
             }             
         
@@ -82,12 +104,16 @@ public class MClientHandler implements Runnable{
     }
     
     
-    private void close()
+    public void close()
     {
         
         //close ressources if avaible
         logger.debug("MClientHandler with filter ID "+this.filter.getFilterID()
                 +" is closing.");
+        this.filter=null;
+        this.lbq=null;
+        this.mccbi=null;
+        this.toamsincomechannel=null;
     }
             
 }

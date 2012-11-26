@@ -36,7 +36,7 @@ public class AnalyticsServer {
     private RMIRegistry registry=null;
     private AnalyticsServerInterface asi=null;
     private ExecutorService pool=null;
-    private LinkedBlockingQueue<Task> rmitoamsincomechannel=null;
+    private LinkedBlockingQueue<Task> toamsincomechannel=null;
     private LinkedBlockingQueue<Task.RESULT> amstormisoutcomechannel=null;
     private LinkedBlockingQueue<Event> distributorincomechannel=null;
     private AnalyticsServerInterfaceImpl ASII=null;
@@ -56,17 +56,17 @@ public class AnalyticsServer {
             }
             
             //create objects necessary for management
-            rmitoamsincomechannel=new LinkedBlockingQueue<Task>();
+            toamsincomechannel=new LinkedBlockingQueue<Task>();
             amstormisoutcomechannel=new LinkedBlockingQueue<Task.RESULT>();
             distributorincomechannel=new LinkedBlockingQueue<Event>();
             
             pool= Executors.newCachedThreadPool();
-            AMS = new AnalyticsManagementSystem(pool,rmitoamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
+            AMS = new AnalyticsManagementSystem(pool,toamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
             //start objects necessary for management
             pool.execute(AMS);
             
             ASII=new AnalyticsServerInterfaceImpl();
-            ASII.initialize(rmitoamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
+            ASII.initialize(toamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
 
             /**
              * Register all neccessary RemoteObjects to the registry
@@ -132,6 +132,7 @@ public class AnalyticsServer {
         } catch (RMIRegistryException ex) {
            this.logger.error("Unbind AnalyticServerInterface from Registry not successfull.");
         }
+        logger.info("AnalyticServer has closed all ressources.");
 
     }
 

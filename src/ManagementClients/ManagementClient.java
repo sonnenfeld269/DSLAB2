@@ -86,18 +86,28 @@ public class ManagementClient implements Runnable {
                  */
                 System.out.print("\n>");
 
-                try {
-                    while ((line = in.readLine()) != null) {
+                
+                while ((line = in.readLine()) != null) {
+                        
+                   try {    
+                        
                         System.out.print("\n>");
+                        
+                        
                         if (line.contains("!subscribe") && this.analyticIsAvaible) {
+                            logger.entry();
                             String[] s = line.split(" ");
                             if (s.length >= 2) {
                                 long sub_id = 0;
                                 int position1 = line.indexOf('\'', 0);
                                 int position2 = line.indexOf('\'', position1 + 1);
+                                if((position2 <= position1)||(position1<0)||(position2<0))
+                                    throw new Exception(this.printUsageofCommand("subscribe"));
                                 String regex = line.substring(position1 + 1, position2);
                                 try {
+                                    logger.debug("Send subscription request to AnalyticServer.");
                                     sub_id = analytic.subscribe(mccbi, regex);
+                                    //regular output
                                     System.out.print("Created subscription with ID " + sub_id
                                             + " for events using filter"
                                             + " '"
@@ -109,37 +119,36 @@ public class ManagementClient implements Runnable {
                                             + ex.getMessage());
                                 }
                             }
-
-                        } else if (line.contains("!unsubscribe")
+                            logger.exit();
+                        }else if (line.contains("!unsubscribe")
                                 && this.analyticIsAvaible) {
+                           logger.entry();
 
+                           
+                            String[] s = line.split(" ");
+                            long id = Long.getLong(s[1]);
                             try {
-                                String[] s = line.split(" ");
-                                long id = Long.getLong(s[1]);
-                                try {
-                                    boolean b;
-                                    b = analytic.unsubscribe(id);
-                                    if (b) {
-                                        System.out.print("subscription"
-                                                + id
-                                                + "terminated ");
-                                    } else {
-                                        System.out.print("Error:unsubscribe id "
-                                                + id
-                                                + "was not successfull.");
-                                    }
-                                } catch (RemoteException ex) {
-                                    System.out.print("Error:managmentClient:"
-                                            + "run:unsubscribe:RemoteException:"
-                                            + ex.getMessage());
+                                boolean b;
+                                logger.debug("Send request to unsubscribe ID "
+                                        +id);
+                                b = analytic.unsubscribe(id);
+                                if (b) {
+                                    System.out.print("subscription"
+                                            + id
+                                            + "terminated ");
+                                } else {
+                                    System.out.print("Error:unsubscribe id "
+                                            + id
+                                            + "was not successfull.");
                                 }
-
-
+                            } catch (RemoteException ex) {
+                                System.out.print("Error:managmentClient:"
+                                        + "run:unsubscribe:RemoteException:"
+                                        + ex.getMessage());
                             } catch (Exception e) {
                                 System.out.print("ERROR:" + e.getMessage());
                             }
-
-
+                          logger.exit();
 
                         } else if (line.contains("!print") && this.analyticIsAvaible) {
                             if (!mccbi.getMode()) {
@@ -151,17 +160,14 @@ public class ManagementClient implements Runnable {
                         } else if (line.contains("!auto") && this.analyticIsAvaible) {
                             mccbi.setEventPrintMode(true);
 
-                        } else if (line.contains("!end") && this.analyticIsAvaible) {
+                        } else if (line.contains("!end")) {
                             //provisorisch
                             Thread.currentThread().interrupt();
                             break;
 
-                        } else if (line.contains("bill") && this.billingIsAvaible) {
-                        } // .
-                        // .
-                        // .
+                        } 
                         /**
-                         * ***Analytics und Billing Eingaben****
+                         * Billing Eingaben****
                          */
                         else if (line.contains("!login") && this.billingIsAvaible) {
                             logger.info("INSIDE MANAGEMENT CLIENT - LOGIN METHOD");
@@ -206,22 +212,41 @@ public class ManagementClient implements Runnable {
                             logger.debug("INSIDE MANAGEMENT CLIENT - LOGOUT METHOD");
                             bss = null;
                             logger.info("USER was sucessfully logged out!");
-                        }else {
-                            logger.info("Wrong command.");
                         }
+                    } catch (Exception ex) {
+                     logger.error("ERROR:" + ex.getMessage());
                     }
-                } catch (Exception e) {
-                    logger.catching(e);
-                }
-            }
+                }// while ((line = in.readLine()) != null) 
+
+            }// while (!Thread.currentThread().isInterrupted() && init)
+          
 
         } catch (Exception ex) {
-            logger.catching(ex);
-            System.out.print("ERROR:" + ex.getMessage());
+          
+            logger.error("ERROR:" + ex.getMessage());
         }
     }
 
     private synchronized long getID() {
         return counter++;
     }
+    
+    public String printUsageofCommand(String command)
+    {
+        if(command.contains("subscribe"))
+            return "<usage subscribe>:!subscribe '<Regex>'";
+        else if(command.contains("unsubcribe"))
+            return "<usage unsubscribe>:!unsubcribe <Subscription ID>";
+        else if(command.contains("print"))
+            return "<usage print>:!print";
+        else if(command.contains("auto"))
+            return "<usage print>:!auto";
+        else if(command.contains("hide"))
+            return "<usage print>:!hide";
+        /*billing commands*/
+        else
+            return "<unknown command>";
+        
+    }
+    
 }

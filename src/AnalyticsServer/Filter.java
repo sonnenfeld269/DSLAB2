@@ -56,6 +56,8 @@ public class Filter {
             Matcher match=entry.getValue().matcher(message);
             if(match.matches())
             {
+                logger.debug("Filter System with ID "+this.filterID+" found a match.");
+                     
                 return true;
             }
                  

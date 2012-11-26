@@ -6,6 +6,10 @@ package AnalyticsServer;
 
 import Event.Event;
 import RMI.ManagementClientCallBackInterface;
+import java.rmi.RemoteException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
@@ -25,14 +29,14 @@ public class AnalyticsManagementSystem implements Runnable {
     private ConcurrentHashMap<Long,Filter> mclient_map=null;
     private ConcurrentHashMap<Long,Filter> subscription_map=null;
     /*message objects*/
-    private LinkedBlockingQueue<Task> rmitoamsincomechannel=null;
+    private LinkedBlockingQueue<Task> toamsincomechannel=null;//from rmi or an Client Handler
     private LinkedBlockingQueue<Task.RESULT> amstormisoutcomechannel=null;
     private LinkedBlockingQueue<Event> distributorincomechannel=null;
     /*Handler*/
     private MessageDistributor MD =null;
     
     public AnalyticsManagementSystem(ExecutorService pool,
-            LinkedBlockingQueue<Task> rmitoamsincomechannel,
+            LinkedBlockingQueue<Task> toamsincomechannel,
             LinkedBlockingQueue<Task.RESULT> amstormisoutcomechannel,
             LinkedBlockingQueue<Event> distributorincomechannel)
     {
@@ -43,7 +47,7 @@ public class AnalyticsManagementSystem implements Runnable {
         //ManagementClient ID and filter
         this.mclient_map=new ConcurrentHashMap<Long,Filter>();
         this.subscription_map=new ConcurrentHashMap<Long,Filter>();
-        this.rmitoamsincomechannel=rmitoamsincomechannel;
+        this.toamsincomechannel=toamsincomechannel;
         this.amstormisoutcomechannel=amstormisoutcomechannel;
         this.distributorincomechannel=distributorincomechannel;
         
@@ -53,22 +57,33 @@ public class AnalyticsManagementSystem implements Runnable {
     
     public void run()
     {
+         logger.entry();
         //start Distributor
         pool.execute(MD);
-        
+        logger.debug("Message Distributor started.");
+       
         
         Task task;
+        logger.debug("AalyticsManagemenSystem Handler is started...");
         while(!Thread.currentThread().isInterrupted())
         {
             Task.RESULT result=null;//used in subscriber or unsubscriber part
             long subscriptionID=0;//used in subscriber or unsubscriber part
+            
             try {
                
-                task=this.rmitoamsincomechannel.take();
-               
-               
+               task=this.toamsincomechannel.take();
+               //get a remoterror task from a client handler
+               if(task.isRemoteError())
+               {
+                   Task.REMOTEERROR error = task.getRemoteError();
+                   
+                   
+                   this.handleRemoteException(error.ClientID);
+                   
                 
-                if(task.isSubscriber())
+               }
+               else if(task.isSubscriber())
                 {
                    /************SUBSCRIBER****************/
                    Long clientId=null;
@@ -121,19 +136,29 @@ public class AnalyticsManagementSystem implements Runnable {
                            MClientHandler handler=new MClientHandler(clientId.longValue()
                                    ,filter
                                    ,subscriber.mccbi
-                                   ,lbq);
+                                   ,lbq
+                                   ,toamsincomechannel);
                            //execute handler
                            pool.execute(handler);
                        }
+                      
                       result = new Task.RESULT(true,subscriptionID);
                       /***********END SUBSCRIBER****************/  
+                   }catch(RemoteException ex)
+                   {
+                       this.handleRemoteException(clientId);
+                       logger.error("AnalyticsManagementSystem:RemoteException:"+ex.getMessage());
+                       
+                       result = new Task.RESULT(false,subscriptionID);
+                       
                    }catch(Exception ex)
                    {
                        logger.error("Failure in Subcription of ID "+clientId+" :Exception:"+ex.getMessage());
+                       
                        result = new Task.RESULT(false,subscriptionID);
                        
                    }
-                   
+                   logger.info("Send result "+result.success+" back to RMI for subscription id "+result.subscriptionID);
                    this.amstormisoutcomechannel.offer(result);
                    
                    
@@ -156,7 +181,7 @@ public class AnalyticsManagementSystem implements Runnable {
 
                       Filter filter=subscription_map.remove(subscriptionID);
                       long filter_id=filter.getFilterID();
-                      if(subscription_map.containsKey(filter_id))
+                      if(subscription_map.containsKey(subscriptionID))
                           throw new Exception("Subscription ID was not properly deleted.");
                       //filter_id=client_id
                       //always one filter exist for one management client
@@ -199,11 +224,12 @@ public class AnalyticsManagementSystem implements Runnable {
             } catch (Exception ex) {
               logger.catching(ex);
               Thread.currentThread().interrupt();
-            }       
+            }  
+           
             
         }
-        
-    
+         logger.debug("AnalyticsManagemenSystem Handler closed...");
+    logger.exit();
     }
     
      public void close()
@@ -214,6 +240,31 @@ public class AnalyticsManagementSystem implements Runnable {
          
          
          
+     }
+     
+     private void handleRemoteException(long ClientID)
+     {
+          //subscription_map muss komplett durchgegangen werden
+         logger.debug("A RemoteException from Client ID "+ClientID
+                +"leads to deletion of all subscriptions of the former Client.");
+         Iterator<Map.Entry<Long,Filter>> iter = subscription_map.entrySet().iterator();
+         while(iter.hasNext())
+         {
+             Map.Entry<Long,Filter> entry = iter.next();
+             long filterID=entry.getValue().getFilterID();
+             if(filterID==ClientID)
+                 iter.remove();
+             
+         }
+
+         if(mclient_map.containsKey(ClientID)) 
+            mclient_map.remove(ClientID);
+
+         //will remove incomechannel from handler 
+         //and send the handler a kill message
+         MD.deregisterOutcomingMember(ClientID);
+         logger.debug("All subscriptions and messagequeues of Client ID "+ClientID+" deleted ");
+
      }
    
 }

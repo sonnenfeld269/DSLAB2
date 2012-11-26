@@ -90,11 +90,14 @@ public class MessageDistributor implements Runnable{
     public  void deregisterOutcomingMember(Long id)
     {
         logger.entry();
-        LinkedBlockingQueue<Event> out=this.outcomingdistributor.remove(id);
-        out.offer(new AnalyticsControllEvent(id.longValue(),
-                AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_FILTER));
-        logger.debug("Removed queue from outcomingdistributor "
-                +"and send close message to Handler.");
+        if(outcomingdistributor.containsKey(id))
+        {
+            LinkedBlockingQueue<Event> out=this.outcomingdistributor.remove(id);
+            out.offer(new AnalyticsControllEvent(id.longValue(),
+                    AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_FILTER));
+            logger.debug("Removed queue from outcomingdistributor "
+                    +"and send close message to Handler.");
+        }
         logger.exit();
     }
     
@@ -111,5 +114,11 @@ public class MessageDistributor implements Runnable{
     public void close()
     {
         logger.debug("Close  MessageDistributor");
+         if(!this.outcomingdistributor.isEmpty())
+         {
+             this.outcomingdistributor.clear();
+             this.incomingchannel=null;
+             this.outcomingdistributor=null;
+         }
     }
 }
