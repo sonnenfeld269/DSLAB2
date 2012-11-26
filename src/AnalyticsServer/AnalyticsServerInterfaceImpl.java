@@ -4,14 +4,13 @@
  */
 package AnalyticsServer;
 
-import RMI.AnalyticsServerInterface;
 import Event.Event;
+import RMI.AnalyticsServerInterface;
 import RMI.ManagementClientCallBackInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.logging.log4j.LogManager;
-
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -36,7 +35,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
         this.ToAmsChannel=ToAmsChannel;
         this.FromAmsChannel=FromAmsChannel;
-        this.distributorchannel=distributorchannel;
+
     }
 
     @Override
@@ -100,7 +99,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
                        
         }
         return b;
-    }
-   
+    
+    } 
     
 }

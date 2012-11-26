@@ -1,7 +1,6 @@
 package RMI;
 
 
-import BillingServer.BillingServerSecure;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 /**
