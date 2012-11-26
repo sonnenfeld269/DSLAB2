@@ -37,7 +37,11 @@ public class MClientHandler implements Runnable{
     {
         logger.entry();
         Event event=null;
-        
+        logger.debug("MClientHandler:A new ManagementClient handler is running with ClientID:"
+                +ClientID
+                +"and FilterID "
+                +filter.getFilterID()
+                );
         while(!Thread.currentThread().isInterrupted())
         {
             try {
