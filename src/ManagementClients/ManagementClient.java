@@ -196,11 +196,14 @@ public class ManagementClient implements Runnable {
                             }
                         } else if (line.contains("!bill") && this.billingIsAvaible) {
                             try {
+                                logger.debug("Inside !bill command!");
                                 String[] split = line.split(" ");
                                 String user = split[1];
-                                System.out.println("Bill of User " + user + " is as follows: \n" + bss.getBill(user).toString());
+                                String report = bss.getBill(user).toString();
+                                System.out.println("Bill of User " + user + " is as follows: \n" + report);
+                                logger.info("Bill of User " + user + " is as follows: \n" + report);
                             } catch (Exception e) {
-                                logger.error("Price step could not be deleted!");
+                                logger.error("A  bill for User could not be created.");
                             }
                         } else if (line.contains("!logout") && this.billingIsAvaible) {
                             logger.debug("INSIDE MANAGEMENT CLIENT - LOGOUT METHOD");
