@@ -25,6 +25,8 @@ public class ManagementClient implements Runnable {
     private BillingServerInterface billing = null;
     private BillingServerSecure bss = null;
     private boolean init = true;
+    private boolean analyticIsAvaible=false;
+    private boolean billingIsAvaible=false;
     
     public ManagementClient(String propertyFile) {
         try {
@@ -38,22 +40,33 @@ public class ManagementClient implements Runnable {
             /**
              * ***AnalyticServer Part*******
              */
-            analytic = registry.getAnalyticsInterface();
-            mccbi = new ManagementClientCallBackInterfaceImpl();
-            mccbi.initializeManagementClient(this.getID(), logger);
+            try{
+                analytic = registry.getAnalyticsInterface();
+                mccbi = new ManagementClientCallBackInterfaceImpl();
+                mccbi.initializeManagementClient(this.getID(), logger);
+                analyticIsAvaible=true;
+            }catch(RMIRegistryException ex)
+            {
+                this.logger.error("Error:Analytics Server not avaible.");
+                analyticIsAvaible=false;
+            }
             /**
              * ***AnalyticServer Part*******
              */
             /**
              * ***BillingServer initialization Part*******
              */
-            billing = registry.getBillingInterface();
+            try{
+                billing = registry.getBillingInterface();
+                billingIsAvaible=true;
+            }catch(RMIRegistryException ex)
+            {
+                this.logger.error("Error:Billing Server not avaible.");
+                billingIsAvaible=false;
+            }
             /**
              * ***BillingServer Part*******
              */
-        } catch (RMIRegistryException ex) {
-            this.logger.error("ManagementClient:Constructor:RMIRegistryException" + ex.getMessage());
-            init = false;
         } catch (Exception ex) {
             this.logger.error("ManagementClient:Constructor:Exception:" + ex.getMessage());
             init = false;
@@ -79,7 +92,7 @@ public class ManagementClient implements Runnable {
                 try {
                     while ((line = in.readLine()) != null) {
                         System.out.print("\n>");
-                        if (line.contains("!subscribe")) {
+                        if (line.contains("!subscribe")&&this.analyticIsAvaible) {
                             String[] s = line.split(" ");
                             if (s.length >= 2) {
                                 long sub_id = 0;
@@ -101,7 +114,8 @@ public class ManagementClient implements Runnable {
                                 }
                             }
                             
-                        } else if (line.contains("!unsubscribe")) {
+                        } else if (line.contains("!unsubscribe")
+                                &&this.analyticIsAvaible) {
                             
                             try {
                                 String[] s = line.split(" ");
@@ -134,29 +148,29 @@ public class ManagementClient implements Runnable {
                             
                             
                             
-                        } else if (line.contains("!print")) {
+                        } else if (line.contains("!print")&&this.analyticIsAvaible) {
                             if (!mccbi.getMode()) {
                                 mccbi.printBuffer();
                             }
-                        } else if (line.contains("!hide")) {
+                        } else if (line.contains("!hide")&&this.analyticIsAvaible) {
                             mccbi.setEventPrintMode(false);
                             
-                        } else if (line.contains("!auto")) {
+                        } else if (line.contains("!auto")&&this.analyticIsAvaible) {
                             mccbi.setEventPrintMode(true);
                             
-                        } else if (line.contains("!end")) {
+                        } else if (line.contains("!end")&&this.analyticIsAvaible) {
                             //provisorisch
                             Thread.currentThread().interrupt();
                             break;
                             
-                        } else if (line.contains("bill")) {
+                        } else if (line.contains("bill")&&this.billingIsAvaible) {
                         } // .
                         // .
                         // .
                         /**
                          * ***Analytics und Billing Eingaben****
                          */
-                        else if (line.contains("!login")) {
+                        else if (line.contains("!login")&&this.billingIsAvaible) {
                             logger.info("INSIDE MANAGEMENT CLIENT - LOGIN METHOD");
                             String[] split = line.split(" ");
                             String login = split[1];
@@ -167,16 +181,16 @@ public class ManagementClient implements Runnable {
                             } else {
                                 logger.info("USER " + login + " not logged in! Wrong username or password.");
                             }
-                        } else if (line.contains("!steps")) {
+                        } else if (line.contains("!steps")&&this.billingIsAvaible) {
                             System.out.println(bss.getPriceSteps().toString());
-                        } else if (line.contains("!addStep")) {
+                        } else if (line.contains("!addStep")&&this.billingIsAvaible) {
                             String[] split = line.split(" ");
                             double min_price = Double.parseDouble(split[1]);
                             double max_price = Double.parseDouble(split[2]);
                             double fee_fix = Double.parseDouble(split[3]);
                             double fee_var = Double.parseDouble(split[4]);
                             bss.createPriceStep(min_price, max_price, fee_fix, fee_var);
-                        } else if (line.contains("!removeStep")) {
+                        } else if (line.contains("!removeStep")&&this.billingIsAvaible) {
                             String[] split = line.split(" ");
                             double min_price = Double.parseDouble(split[1]);
                             double max_price = Double.parseDouble(split[2]);
