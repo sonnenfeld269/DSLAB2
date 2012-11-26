@@ -27,6 +27,7 @@ public class AnalyticsControllEvent extends Event {
      public static enum AnalyticsControllEventType
     {
         CLOSE_FILTER,
+        CLOSE_DISTRIBUTOR,
         ERROR_SUBSCRIPTION,
         ERROR_UNSUBSCRIPTION
         

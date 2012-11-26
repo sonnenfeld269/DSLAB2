@@ -29,18 +29,21 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         super();
     }
 
-    public void initialize(LinkedBlockingQueue<Task> ToAmsChannel,LinkedBlockingQueue<Task.RESULT> FromAmsChannel,LinkedBlockingQueue<Event> distributorchannel)
+    public void initialize(LinkedBlockingQueue<Task> ToAmsChannel,
+            LinkedBlockingQueue<Task.RESULT> FromAmsChannel,
+            LinkedBlockingQueue<Event> distributorchannel)
     {
        
         logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
         this.ToAmsChannel=ToAmsChannel;
         this.FromAmsChannel=FromAmsChannel;
+        this.distributorchannel=distributorchannel;
 
     }
 
     @Override
     public void processEvents(Event e) throws RemoteException {
-        logger.debug("RMI send an Event to the distributorChannel.");
+        logger.debug("AnalyticsServerInterfaceImpl:RMI send an Event to the distributorChannel.");
         this.distributorchannel.offer(e);
     }
 
@@ -48,9 +51,9 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     public long subscribe(ManagementClientCallBackInterface mclient,String filter) throws RemoteException {
         long id=this.getNewSubscribtionID();
         boolean b=false;
-        Task.SUBSCRIBER subscriber=new Task.SUBSCRIBER(mclient,filter);
+        Task.SUBSCRIBER subscriber=new Task.SUBSCRIBER(mclient,id,filter);
         Task task = new Task(subscriber);
-        logger.debug("RMI send an Suscriber Task to the AnalyticsManagementSystem.");
+        logger.debug("AnalyticsServerInterfaceImpl:RMI send an Suscriber Task to the AnalyticsManagementSystem.");
         this.ToAmsChannel.offer(task);
         try {
             b=getResultFromAMS(id);
@@ -68,7 +71,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         boolean b=false;
         Task.UNSUBSCRIBER unsubscriber = new Task.UNSUBSCRIBER(subsciptionID);
         Task task = new Task(unsubscriber);
-        logger.debug("RMI send an UnSuscriber Task to the AnalyticsManagementSystem.");
+        logger.debug("AnalyticsServerInterfaceImpl:RMI send an UnSuscriber Task to the AnalyticsManagementSystem.");
         this.ToAmsChannel.offer(task);
         try{
             b=getResultFromAMS(subsciptionID);
@@ -107,5 +110,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
         return b;
     
     } 
+    
+    
     
 }
