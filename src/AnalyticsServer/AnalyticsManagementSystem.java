@@ -53,6 +53,10 @@ public class AnalyticsManagementSystem implements Runnable {
               
                   //pool.                        
               
+            } catch (InterruptedException ex) {
+               Thread.currentThread().interrupt();
+              logger.catching(ex);
+              Thread.currentThread().interrupt();
             } catch (Exception ex) {
               logger.catching(ex);
               Thread.currentThread().interrupt();

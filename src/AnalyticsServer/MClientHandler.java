@@ -46,17 +46,6 @@ public class MClientHandler implements Runnable{
                   Thread.currentThread().interrupt();
                   break;
                   
-              }else  if(event.getType().contains(AnalyticsControllEvent.AnalyticsControllEventType.ERROR_SUBSCRIPTION.name()))
-              {
-                  mccbi.processEvent(event.toString()); 
-                  logger.debug("Send Event: "+event.getType()+" to ManagementClient.");
-                  
-              }else  if(event.getType().contains(AnalyticsControllEvent.AnalyticsControllEventType.ERROR_UNSUBSCRIPTION.name()))
-              {
-                  
-                  mccbi.processEvent(event.toString()); 
-                  logger.debug("Send Event: "+event.getType()+" to ManagementClient.");
-                  
               }else if(filter.checkMessage(event.getType()))
               {
                  

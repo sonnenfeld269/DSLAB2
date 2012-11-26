@@ -46,7 +46,6 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
 
     @Override
     public long subscribe(ManagementClientCallBackInterface mclient,String filter) throws RemoteException {
-        //throw new UnsupportedOperationException("Not supported yet.");
         long id=this.getNewSubscribtionID();
         boolean b=false;
         Task.SUBSCRIBER subscriber=new Task.SUBSCRIBER(mclient,filter);
@@ -65,13 +64,20 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     }
 
     @Override
-    public void unsubscribe(long subsciptionID) throws RemoteException {
-        
+    public boolean unsubscribe(long subsciptionID) throws RemoteException {
+        boolean b=false;
         Task.UNSUBSCRIBER unsubscriber = new Task.UNSUBSCRIBER(subsciptionID);
         Task task = new Task(unsubscriber);
         logger.debug("RMI send an UnSuscriber Task to the AnalyticsManagementSystem.");
         this.ToAmsChannel.offer(task);
+        try{
+            b=getResultFromAMS(subsciptionID);
+        }catch(InterruptedException ex)
+        {
+             logger.catching(ex);
+        }
         
+        return b;
     }
     
     

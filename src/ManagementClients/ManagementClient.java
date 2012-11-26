@@ -7,6 +7,7 @@ import RMI.RMIRegistry;
 import RMI.RMIRegistryException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.rmi.RemoteException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -72,8 +73,7 @@ public class ManagementClient implements Runnable {
                 /**
                  * ***Analytics und Billing Eingaben****
                  */
-                //System out analytic and billing
-                //> or user>
+               
                 System.out.print("\n>");
                 
                 try {
@@ -86,12 +86,19 @@ public class ManagementClient implements Runnable {
                                 int position1 = line.indexOf('\'', 0);
                                 int position2 = line.indexOf('\'', position1 + 1);
                                 String regex = line.substring(position1 + 1, position2);
-                                sub_id = analytic.subscribe(mccbi, regex);
-                                System.out.print("Created subscription with ID " + sub_id
-                                        + " for events using filter"
-                                        + " '"
-                                        + regex
-                                        + "' ");
+                                try{
+                                    sub_id = analytic.subscribe(mccbi, regex);
+                                    System.out.print("Created subscription with ID " + sub_id
+                                            + " for events using filter"
+                                            + " '"
+                                            + regex
+                                            + "' ");
+                                }catch(RemoteException ex)
+                                {
+                                    System.out.print("Error:managmentClient:"
+                                            +"run:subscribe:RemoteException:"
+                                            +ex.getMessage());
+                                }
                             }
                             
                         } else if (line.contains("!unsubscribe")) {
@@ -99,11 +106,26 @@ public class ManagementClient implements Runnable {
                             try {
                                 String[] s = line.split(" ");
                                 long id = Long.getLong(s[1]);
-                                
-                                analytic.unsubscribe(id);
-                                System.out.print("subscription"
-                                        + id
-                                        + "terminated ");
+                                try{
+                                    boolean b;
+                                    b=analytic.unsubscribe(id);
+                                    if(b)
+                                    {
+                                    System.out.print("subscription"
+                                            + id
+                                            + "terminated ");
+                                    }else
+                                    {
+                                        System.out.print("Error:unsubscribe id " 
+                                            + id
+                                            + "was not successfull.");
+                                    }
+                                }catch(RemoteException ex)
+                                {
+                                    System.out.print("Error:managmentClient:"
+                                            +"run:unsubscribe:RemoteException:"
+                                            +ex.getMessage());
+                                }
                                 
                                 
                             } catch (Exception e) {
