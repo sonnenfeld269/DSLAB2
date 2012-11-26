@@ -15,6 +15,7 @@ import utils.EasyProperties;
 public class BillingServerInterfaceImpl extends UnicastRemoteObject implements BillingServerInterface {
 
     static Logger logger = LogManager.getLogger(BillingServerInterfaceImpl.class);
+    BillingServerSecure bss = null;
 
     public BillingServerInterfaceImpl() throws RemoteException {
         super();
@@ -23,7 +24,7 @@ public class BillingServerInterfaceImpl extends UnicastRemoteObject implements B
     @Override
     public BillingServerSecure login(String username, String password) throws RemoteException {
         logger.debug("BillingServerInterface Login Method started!");
-        BillingServerSecure bss = null;
+        bss = null;
 
         if (EasyProperties.login("./src/user.properties", username, password)) {
             bss = new BillingServerSecureImpl();
@@ -31,5 +32,13 @@ public class BillingServerInterfaceImpl extends UnicastRemoteObject implements B
         } else {
             return null;
         }
+    }
+
+    @Override
+    public BillingServerSecure getBillingServerSecure() {
+        if (bss != null) {
+            return bss;
+        }
+        return null;
     }
 }

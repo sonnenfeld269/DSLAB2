@@ -9,6 +9,7 @@ import Event.*;
 import MyLogger.Log;
 /*********** RMI *******************************/
 import RMI.AnalyticsServerInterface;
+import RMI.BillingServerSecure;
 import RMI.RMIRegistry;
 import RMI.RMIRegistryException;
 import java.rmi.RemoteException;
@@ -20,6 +21,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 
@@ -39,6 +42,7 @@ public class AuctionManagementSystem implements Runnable{
     private String propertyFile="./src/registry.properties";
     private RMIRegistry registry=null;
     private AnalyticsServerInterface analytic=null;
+    private BillingServerSecure billing=null;
     boolean rmiAvailable;
     /*********** RMI *******************************/
     private CommandTask readRequest()
@@ -77,10 +81,13 @@ public class AuctionManagementSystem implements Runnable{
              */
              registry=new RMIRegistry(propertyFile);
              analytic = registry.getAnalyticsInterface();
+             billing = registry.getBillingInterface().getBillingServerSecure();
              rmiAvailable=true;
              /*
              * ***************RMI**********************
              */
+        } catch (RemoteException ex) {
+           this.logger.output("AuctionManagementSystem:RemoteException:"+ex.getMessage(), 2);
         } catch (RMIRegistryException ex) {
            this.logger.output("AuctionManagementSystem:RMIRegistryException:"+ex.getMessage(), 2);
         }
@@ -187,7 +194,7 @@ public class AuctionManagementSystem implements Runnable{
 
                     /*BillingServer RMI Method Invocation*/
                     
-                    //billAuction(...)
+                    billing.billAuction(auc.getHighestBidder(),auc.getID(),auc.getHighestBid());
                     
                     /*BillingServer RMI Method Invocation*/
                     
@@ -704,17 +711,8 @@ public class AuctionManagementSystem implements Runnable{
                  logger.output("AMS_HandlerThread:end:Exception"
                      +":"+e.getMessage(), 2);
                 }
-                
-                
-                
-                
             }
              logger.output("AMS_HandlerThread finished",2);
         }
-    
-    
     }
-   
-    
-    
 }

@@ -2,6 +2,7 @@ package BillingServer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -9,7 +10,7 @@ import java.util.ArrayList;
  */
 public class PriceSteps implements Serializable {
 
-    ArrayList<PriceStep> priceSteps = new ArrayList<PriceStep>();
+    public List<PriceStep> priceSteps = new ArrayList<PriceStep>();
 
     public PriceSteps() {
         initDefaultPriceSteps();
@@ -39,6 +40,26 @@ public class PriceSteps implements Serializable {
         priceSteps.add(level_2);
         priceSteps.add(level_3);
         priceSteps.add(level_4);
+    }
+
+    /**
+     * this methods checks if there is an overlap inside the price
+     * configurations
+     *
+     * @param min_value
+     * @param max_value
+     * @return false if overlap or negative, else return true
+     */
+    public boolean check(double min_value, double max_value) {
+        for (PriceStep ps : priceSteps) {
+            if (min_value >= ps.getMin_value() && min_value < ps.getMax_value()) {
+                return false;
+            }
+            if(min_value >= max_value){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
