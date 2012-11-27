@@ -22,6 +22,7 @@ public class BillingsServer implements Runnable {
     private BillingServerInterface bsi = null;
     private Executor pool = null;
     static PriceSteps ips = new PriceSteps();
+    static Bill bill = new Bill();
 
     public BillingsServer(String propertyFile) {
         try {

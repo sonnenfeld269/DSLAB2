@@ -1,10 +1,12 @@
 package BillingServer;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Dave
  */
-public class Auction {
+public class Auction implements Serializable{
 
     private long id;
     private double price;

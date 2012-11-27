@@ -10,6 +10,7 @@ import MyLogger.Log;
  * ********* RMI ******************************
  */
 import RMI.AnalyticsServerInterface;
+import RMI.BillingServerInterface;
 import RMI.BillingServerSecure;
 import RMI.RMIRegistry;
 import RMI.RMIRegistryException;
@@ -24,8 +25,6 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class AuctionManagementSystem implements Runnable {
     
@@ -45,7 +44,8 @@ public class AuctionManagementSystem implements Runnable {
     private String propertyFile = "./src/registry.properties";
     private RMIRegistry registry = null;
     private AnalyticsServerInterface analytic = null;
-    private BillingServerSecure billing = null;
+    private BillingServerInterface billing = null;
+    private BillingServerSecure bss = null;
     boolean rmiAvailable = false;
     boolean rmiAnalyticAvailable = false;
     boolean rmiBillingAvailable = false;
@@ -97,7 +97,14 @@ public class AuctionManagementSystem implements Runnable {
                 }
                 
                 try {
-                    billing = registry.getBillingInterface().getBillingServerSecure();
+                    billing = registry.getBillingInterface();
+                    bss= registry.getBillingInterface().login("auctionServer", "44");
+                    if(bss != null){
+                            logger.output("AuctionManagementSystem: bss aviable",2);
+                    } else {
+                          logger.output("AuctionManagementSystem: No bss aviable",2);
+                    }
+                
                     rmiBillingAvailable = true;
                 } catch (RMIRegistryException ex) {
                     this.logger.output("AuctionManagementSystem:RMIRegistryException:" + ex.getMessage(), 2);
@@ -208,7 +215,11 @@ public class AuctionManagementSystem implements Runnable {
                     if (rmiBillingAvailable) {
                         /*BillingServer RMI Method Invocation*/
                         logger.output("rmiBilling Aviable, billAuction to happen soon.", 2);
-                        billing.billAuction(auc.getHighestBidder(), auc.getID(), auc.getHighestBid());
+                        if(bss != null){
+                        bss.billAuction(auc.getHighestBidder(), auc.getID(), auc.getHighestBid());
+                        } else {
+                            logger.output("AuctionManagementSystem: No bss aviable",2);
+                        }
                         /*BillingServer RMI Method Invocation*/
                     }//rmiBillingAvaible
 

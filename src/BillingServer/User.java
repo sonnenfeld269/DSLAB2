@@ -1,5 +1,6 @@
 package BillingServer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -7,7 +8,7 @@ import java.util.HashMap;
  *
  * @author Dave
  */
-public class User {
+public class User implements Serializable{
 
     private String name;
     private ArrayList<Auction> auctions = new ArrayList<Auction>();

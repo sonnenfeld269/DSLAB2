@@ -153,7 +153,7 @@ public class RMIRegistry {
         try {
 
             billing=(BillingServerInterface) registry.lookup(BillingServerInterface.class.getSimpleName());
-       
+       logger.debug("billingInterface was returned successfully!");
         } catch (RemoteException ex) {
             logger.error("RMIRegistry:getBillingInterface:RemoteException:"+ex.getMessage());
             throw new RMIRegistryException("RemoteException:",ex);

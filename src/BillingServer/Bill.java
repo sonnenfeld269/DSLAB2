@@ -1,12 +1,13 @@
 package BillingServer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
  * @author Dave
  */
-public class Bill {
+public class Bill implements Serializable{
 
     private ArrayList<User> users = new ArrayList<User>();
     String billReport = "";
@@ -15,6 +16,7 @@ public class Bill {
     double fee_total;
 
     public void createBill(String user) {
+        System.out.println("DEBUG: THE USER IS: " + getUserByName(user));
         double strike_price;
         for (Auction a : getUserByName(user).getAuctions()) {
             strike_price = a.getPrice();

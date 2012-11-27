@@ -209,7 +209,7 @@ public class ManagementClient implements Runnable {
                                 System.out.println("Bill of User " + user + " is as follows: \n" + report);
                                 logger.info("Bill of User " + user + " is as follows: \n" + report);
                             } catch (Exception e) {
-                                logger.error("A  bill for User could not be created.");
+                                logger.error("A  bill for User could not be created." + e.getMessage());
                             }
                         } else if (line.contains("!logout") && this.billingIsAvaible) {
                             logger.debug("INSIDE MANAGEMENT CLIENT - LOGOUT METHOD");
