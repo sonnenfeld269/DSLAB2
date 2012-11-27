@@ -82,7 +82,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
             logger.info("Wait for unsubscribe resul status.");
             b=getResultFromAMS(subsciptionID);
             logger.info("Get result status "+b+" from AnalyticManagementSystem"
-                    +"for subscription ID "+subsciptionID);
+                    +"to unsubscribe subscriptionID "+subsciptionID);
         }catch(InterruptedException ex)
         {
              logger.catching(ex);

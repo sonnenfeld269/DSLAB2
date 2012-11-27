@@ -9,6 +9,7 @@ import auctionmanagement.Notification;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import org.apache.logging.log4j.LogManager;
 
 import org.apache.logging.log4j.Logger;
 
@@ -48,25 +49,34 @@ public class ManagementClientCallBackInterfaceImpl extends UnicastRemoteObject i
         }
     }
     
-     @Override 
+    @Override 
     public long getManagementClientID()throws RemoteException
     {
          return id;
-     
+    }
+    @Override 
+    public void setManagementClientID(long ClientID)throws RemoteException
+    {
+        this.id=ClientID;
     }
     
     
-    public void initializeManagementClient(long id,Logger logger)
+    public void initializeManagementClient()
     {
         if(!init)
         {
-            this.logger=logger;
-            this.id=id;
+            this.logger = LogManager.getLogger(ManagementClientCallBackInterfaceImpl.class.getSimpleName());
+            this.id=-1;
             mode=false;
             eventbuffer= new ConcurrentLinkedQueue<String>();
             init=true;
         }
         
+    }
+    
+    public long getLocalClientID()
+    {
+        return this.id;
     }
     
     public void reset()
@@ -98,7 +108,7 @@ public class ManagementClientCallBackInterfaceImpl extends UnicastRemoteObject i
         {
             String[] s =clearBuffer();
             for(int i=0;i<s.length;i++)
-                System.out.print(s[i]);
+                System.out.println(">"+s[i]);
         }
     }
     
