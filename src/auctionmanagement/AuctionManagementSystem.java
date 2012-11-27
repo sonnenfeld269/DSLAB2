@@ -65,7 +65,7 @@ public class AuctionManagementSystem implements Runnable {
     }
 
     //public ----------------------------------------- 
-    public AuctionManagementSystem(LinkedBlockingQueue<CommandTask> incomingrequest, ExecutorService pool, Log output) {
+    public AuctionManagementSystem(String analyticBinding, String billingBinding,LinkedBlockingQueue<CommandTask> incomingrequest, ExecutorService pool, Log output) {
         this.pool = pool;
         this.logger = output;
         this.incomingrequest = incomingrequest;
@@ -89,7 +89,7 @@ public class AuctionManagementSystem implements Runnable {
             if (registry.getRegistry() != null) {
                 rmiAvailable = true;
                 try {
-                    analytic = registry.getAnalyticsInterface();
+                    analytic = registry.getAnalyticsInterface(analyticBinding);
                     rmiAnalyticAvailable = true;
                 } catch (RMIRegistryException ex) {
                     this.logger.output("AuctionManagementSystem:RMIRegistryException:" + ex.getMessage(), 2);
@@ -98,8 +98,8 @@ public class AuctionManagementSystem implements Runnable {
                 }
                 
                 try {
-                    billing = registry.getBillingInterface();
-                    bss= registry.getBillingInterface().login("auctionServer", "44");
+                    billing = registry.getBillingInterface(billingBinding);
+                    bss= registry.getBillingInterface(billingBinding).login("auctionServer", "44");
                     if(bss != null){
                             logger.output("AuctionManagementSystem:RMI: bss aviable",2);
                     } else {

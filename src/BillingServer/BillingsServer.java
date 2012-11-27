@@ -27,7 +27,7 @@ public class BillingsServer implements Runnable {
     private BillingServerInterfaceImpl BSII=null;
     private BillingServerSecureImpl BSSI=null;
     
-    public BillingsServer(String propertyFile) {
+    public BillingsServer(String propertyFile, String billingBindingName) {
         try {
             logger = LogManager.getLogger(BillingsServer.class);
             registry = new RMIRegistry(propertyFile);
@@ -40,7 +40,7 @@ public class BillingsServer implements Runnable {
             
             BSII.initialize(BSSI);
             
-            registry.registerObject(BillingServerInterface.class.getSimpleName(), BSII);
+            registry.registerObject(billingBindingName, BSII);
             logger.info("BillingServerInterface was successfully registered to the Registry");
             
         } catch (RemoteException ex) { // java 7 wird bei der abgabe nicht unterstützt

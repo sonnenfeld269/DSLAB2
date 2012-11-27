@@ -11,7 +11,7 @@ import BillingServer.BillingsServer;
 public class BillingServer {
 
     public static void main(String[] args) {
-        BillingsServer billingserver = new BillingsServer("./src/registry.properties");
+        BillingsServer billingserver = new BillingsServer("./src/registry.properties",args[0]);
         billingserver.run();
         System.exit(0);
     }

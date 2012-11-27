@@ -28,7 +28,7 @@ public class ManagementClient implements Runnable {
     private boolean analyticIsAvaible = false;
     private boolean billingIsAvaible = false;
 
-    public ManagementClient(String propertyFile) {
+    public ManagementClient(String propertyFile, String analyticBindingName,String billingBindingName) {
         try {
             logger = LogManager.getLogger(ManagementClient.class.getSimpleName());
             /**
@@ -41,7 +41,7 @@ public class ManagementClient implements Runnable {
              * ***AnalyticServer Part*******
              */
             try {
-                analytic = registry.getAnalyticsInterface();
+                analytic = registry.getAnalyticsInterface(analyticBindingName);
                 mccbi = new ManagementClientCallBackInterfaceImpl();
                 mccbi.initializeManagementClient();
                 analyticIsAvaible = true;
@@ -56,7 +56,7 @@ public class ManagementClient implements Runnable {
              * ***BillingServer initialization Part*******
              */
             try {
-                billing = registry.getBillingInterface();
+                billing = registry.getBillingInterface(billingBindingName);
                 billingIsAvaible = true;
             } catch (RMIRegistryException ex) {
                 this.logger.error("Error:Billing Server not avaible.");

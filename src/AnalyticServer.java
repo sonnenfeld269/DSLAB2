@@ -14,7 +14,7 @@ public class AnalyticServer {
     
     public static void main(String[] args)
     {
-        AnalyticsServer analyticserver=new AnalyticsServer("./src/registry.properties");
+        AnalyticsServer analyticserver=new AnalyticsServer("./src/registry.properties",args[0]);
         analyticserver.run();
   
         System.exit(0);
