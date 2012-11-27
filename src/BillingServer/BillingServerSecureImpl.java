@@ -17,21 +17,25 @@ import org.apache.logging.log4j.Logger;
 public class BillingServerSecureImpl extends UnicastRemoteObject implements BillingServerSecure {
 
     static final Logger logger = LogManager.getLogger(BillingServerSecureImpl.class);
-
+    static long counter=0;
+    
     public BillingServerSecureImpl() throws RemoteException {
         super();
         logger.info("BillingServerSecureImpl started!");
+        long value=this.getnewID();
     }
 
     @Override
     public PriceSteps getPriceSteps() {
         logger.debug("Inside getPriceSteps");
+        logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
         return BillingsServer.ips;
     }
 
     @Override
     public void createPriceStep(double min_value, double max_value, double fee_fixed, double fee_variable) throws RemoteException {
         logger.debug("Inside createPriceStep");
+        logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
         if (min_value < 0 || max_value < 0 || fee_fixed < 0 || fee_variable < 0) {
             throw new RemoteException("There is a negative number.");
         }
@@ -46,13 +50,14 @@ public class BillingServerSecureImpl extends UnicastRemoteObject implements Bill
     @Override
     public void deletePriceStep(double min_value, double max_value) throws RemoteException {
         logger.debug("Inside deletePriceStep");
+        logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
         BillingsServer.ips.deletePriceStep(min_value, max_value);
     }
 
     @Override
     public void billAuction(String user, long auctionID, double price) throws RemoteException {
         logger.debug("Inside billAuction");
-
+        logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
         if (BillingsServer.bill.getUserByName(user) != null) {
             logger.debug("The user list already contains the user " + user);
             User u = BillingsServer.bill.getUserByName(user);
@@ -72,7 +77,13 @@ public class BillingServerSecureImpl extends UnicastRemoteObject implements Bill
     @Override
     public Bill getBill(String user) throws RemoteException {
         logger.debug("Inside getBill(" + user + ")");
+        logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
         BillingsServer.bill.createBill(user);
         return BillingsServer.bill;
+    }
+    
+    public synchronized long getnewID()
+    {
+       return BillingServerSecureImpl.counter++;
     }
 }
