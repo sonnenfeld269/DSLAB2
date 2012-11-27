@@ -51,13 +51,15 @@ public class PriceSteps implements Serializable {
      * @param max_value
      * @return false if overlap or negative, else return true
      */
-    public  boolean  check(double min_value, double max_value) {
+    public boolean check(double min_value, double max_value) {
         for (PriceStep ps : priceSteps) {
             if (min_value >= ps.getMin_value() && min_value < ps.getMax_value()) {
                 return false;
             }
-            if(min_value >= max_value){
-                return false;
+            if (max_value != 0) {
+                if (min_value >= max_value) {
+                    return false;
+                }
             }
         }
         return true;

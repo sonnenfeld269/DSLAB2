@@ -222,7 +222,7 @@ public class AuctionManagementSystem implements Runnable {
                         /*BillingServer RMI Method Invocation*/
                         logger.output("rmiBilling Aviable, billAuction to happen soon.", 2);
                         if(bss != null){
-                            bss.billAuction(auc.getHighestBidder(), auc.getID(), auc.getHighestBid());
+                            bss.billAuction(auc.getOwner(), auc.getID(), auc.getHighestBid());
                         } else {
                             logger.output("AuctionManagementSystem: No bss aviable",2);
                         }
