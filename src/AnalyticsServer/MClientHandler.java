@@ -37,7 +37,7 @@ public class MClientHandler implements Runnable{
         this.mccbi=mccbi;
         this.lbq=lbq;
         this.toamsincomechannel=toamsincomechannel;
-        logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+MClientHandler.class.getSimpleName());
+        logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+MClientHandler.class.getSimpleName());
     }
     
     public void run()

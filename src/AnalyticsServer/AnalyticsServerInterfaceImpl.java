@@ -36,7 +36,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
             LinkedBlockingQueue<Event> statisticincomechannel)
     {
        
-        logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
+        logger=LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
         this.ToAmsChannel=ToAmsChannel;
         this.FromAmsChannel=FromAmsChannel;
         this.distributorchannel=distributorchannel;

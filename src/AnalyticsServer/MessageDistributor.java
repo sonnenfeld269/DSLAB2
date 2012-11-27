@@ -24,7 +24,7 @@ public class MessageDistributor implements Runnable{
     private Logger logger=null;
     public MessageDistributor(LinkedBlockingQueue<Event> incomingchannel)
     {   
-        logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+MessageDistributor.class.getSimpleName());
+        logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+MessageDistributor.class.getSimpleName());
         this.incomingchannel=incomingchannel;
         outcomingdistributor=new ConcurrentHashMap<Long,LinkedBlockingQueue<Event>>();
     }

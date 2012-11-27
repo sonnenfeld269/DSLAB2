@@ -46,7 +46,7 @@ public class AnalyticsServer {
     {
         try {
            // logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
-            logger = LogManager.getLogger(LogManager.ROOT_LOGGER_NAME);
+            logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
             /**
              * Get or start Registry(Naming Server)
              **/

@@ -44,7 +44,7 @@ public class AnalyticsManagementSystem implements Runnable {
             LinkedBlockingQueue<Event> distributorincomechannel,
             LinkedBlockingQueue<Event> statisticsincomechannel)
     {
-        this.logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+
+        this.logger=LogManager.getLogger(AnalyticsServer.class.getSimpleName()+
                 "."+AnalyticsManagementSystem.class.getSimpleName());
        
         this.pool=pool;

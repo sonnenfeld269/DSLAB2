@@ -25,7 +25,7 @@ public class Filter {
     
     public Filter()
     {
-        this.logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+Filter.class.getSimpleName());
+        this.logger=LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+Filter.class.getSimpleName());
         filterID=getnewID();
         RegexFilterMap= new ConcurrentHashMap<Long,Pattern>();
     
