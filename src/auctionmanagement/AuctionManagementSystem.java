@@ -101,9 +101,11 @@ public class AuctionManagementSystem implements Runnable {
                     billing = registry.getBillingInterface();
                     bss= registry.getBillingInterface().login("auctionServer", "44");
                     if(bss != null){
-                            logger.output("AuctionManagementSystem: bss aviable",2);
+                            logger.output("AuctionManagementSystem:RMI: bss aviable",2);
                     } else {
-                          logger.output("AuctionManagementSystem: No bss aviable",2);
+                            logger.output("AuctionManagementSystem:RMI: No BillingInterface aviable");
+                            throw new RMIRegistryException("BSS not aviable!");
+                          
                     }
                 
                     rmiBillingAvailable = true;
@@ -163,20 +165,20 @@ public class AuctionManagementSystem implements Runnable {
         private Auction auc = null;
         private Account owner = null;
         private Account bidder = null;
-        private Log error = null;
+        private Log logger = null;
         
-        public Task(long auction_id, Log error) {
+        public Task(long auction_id, Log logger) {
             this.auction_id = new Long(auction_id);
-            this.error = error;
+            this.logger = logger;
             // account_map
             
         }
         
         public void run() {
-            this.error.output("TimerTaskHandleThread started a schedule...", 2);
+            this.logger.output("TimerTaskHandleThread started a schedule...", 2);
             this.auc = auction_map.remove(this.auction_id);
-            this.error.output("Close auction:" + "id:" + auc.getID() + ",desc:" + auc.getDescription(), 3);
-            this.error.output("Owner:" + auc.getOwner() + ",Hbidder:" + auc.getHighestBidder(), 3);
+            this.logger.output("Close auction:" + "id:" + auc.getID() + ",desc:" + auc.getDescription(), 3);
+            this.logger.output("Owner:" + auc.getOwner() + ",Hbidder:" + auc.getHighestBidder(), 3);
             owner = account_map.get(this.auc.getOwner());
             if (auc.getHighestBidder().contains("none")) {
                 bidder = null;
@@ -220,22 +222,21 @@ public class AuctionManagementSystem implements Runnable {
                         /*BillingServer RMI Method Invocation*/
                         logger.output("rmiBilling Aviable, billAuction to happen soon.", 2);
                         if(bss != null){
-                        bss.billAuction(auc.getHighestBidder(), auc.getID(), auc.getHighestBid());
+                            bss.billAuction(auc.getHighestBidder(), auc.getID(), auc.getHighestBid());
                         } else {
                             logger.output("AuctionManagementSystem: No bss aviable",2);
                         }
                         /*BillingServer RMI Method Invocation*/
                     }//rmiBillingAvaible
-
-
                 }//rmiAvaible
             } catch (RemoteException ex) {
                 logger.output("TimerTaskHandle:RMI:RemoteException:" + ex.getMessage(), 2);
             } catch (NullPointerException e) {
                 logger.output("TimerTaskHandle:RMI:NullPointerException:" + e.getMessage());
+                
             }
 
-
+             this.logger.output("TimerTaskHandleThread finished a schedule...", 2);
             /**
              * ********* RMI ******************************
              */
@@ -275,10 +276,10 @@ public class AuctionManagementSystem implements Runnable {
              
              }catch(ClientUDPException e)
              {
-             this.error.output("TimerTaskThread:ClientUDPException:"+e.getMessage());
+             this.logger.output("TimerTaskThread:ClientUDPException:"+e.getMessage());
              }*/
-            this.error.output("TimerTaskHandleThread finished a schedule...", 2);
-        }
+           
+        }//run()
     }
     
     public class AMS_Handler implements Runnable {

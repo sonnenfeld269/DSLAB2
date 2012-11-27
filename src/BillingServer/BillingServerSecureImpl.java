@@ -16,20 +16,24 @@ import org.apache.logging.log4j.Logger;
  */
 public class BillingServerSecureImpl extends UnicastRemoteObject implements BillingServerSecure {
 
-    static final Logger logger = LogManager.getLogger(BillingServerSecureImpl.class);
+    
+    Logger logger = LogManager.getLogger(BillingsServer.class.getSimpleName()+"."
+             +BillingServerSecureImpl.class.getSimpleName());
     static long counter=0;
+    private PriceSteps ips = new PriceSteps();
+    private Bill bill = new Bill();
     
     public BillingServerSecureImpl() throws RemoteException {
         super();
         logger.info("BillingServerSecureImpl started!");
         long value=this.getnewID();
     }
-
+    
     @Override
     public PriceSteps getPriceSteps() {
         logger.debug("Inside getPriceSteps");
         logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
-        return BillingsServer.ips;
+        return this.ips;
     }
 
     @Override
@@ -39,10 +43,10 @@ public class BillingServerSecureImpl extends UnicastRemoteObject implements Bill
         if (min_value < 0 || max_value < 0 || fee_fixed < 0 || fee_variable < 0) {
             throw new RemoteException("There is a negative number.");
         }
-        if (!BillingsServer.ips.check(min_value, max_value)) {
+        if (!this.ips.check(min_value, max_value)) {
             throw new RemoteException("There is an overlap.");
         }
-        BillingsServer.ips.createPriceStep(min_value, max_value, fee_fixed, fee_variable);
+        this.ips.createPriceStep(min_value, max_value, fee_fixed, fee_variable);
         logger.info("PriceStep added successfully");
 
     }
@@ -51,35 +55,41 @@ public class BillingServerSecureImpl extends UnicastRemoteObject implements Bill
     public void deletePriceStep(double min_value, double max_value) throws RemoteException {
         logger.debug("Inside deletePriceStep");
         logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
-        BillingsServer.ips.deletePriceStep(min_value, max_value);
+        this.ips.deletePriceStep(min_value, max_value);
     }
 
     @Override
     public void billAuction(String user, long auctionID, double price) throws RemoteException {
         logger.debug("Inside billAuction");
         logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
-        if (BillingsServer.bill.getUserByName(user) != null) {
+        User u =null;
+        
+        if (this.bill.isUserAvailable(user)) {
             logger.debug("The user list already contains the user " + user);
-            User u = BillingsServer.bill.getUserByName(user);
+            
             Auction a = new Auction(auctionID, price);
-            u.getAuctions().add(a);
+            this.bill.putAuctiontoUser(a, user);
+            //u.getAuctions().add(a);
         } else {
             logger.debug("The user " + user + " is not in the list and will be created.");
-            User u = new User(user);
+            u = new User(user);
             Auction a = new Auction(auctionID, price);
-            u.getAuctions().add(a);
-            BillingsServer.bill.getUsers().add(u);
+            u.putAuction(a);
+            if(!this.bill.adduser(u))
+            {
+                logger.fatal(":billAuction:User "+user+" was not added to the bill.user List.");
+            }
         }
 
-        logger.info("An ended Auction with id " + auctionID + "  was saved to the User " + BillingsServer.bill.getUserByName(user).getName());
+        logger.info("An ended Auction with id " + auctionID + "  was saved to the User " + user);
     }
 
     @Override
     public Bill getBill(String user) throws RemoteException {
         logger.debug("Inside getBill(" + user + ")");
         logger.debug("Actuaöl counter value is "+BillingServerSecureImpl.counter);
-        BillingsServer.bill.createBill(user);
-        return BillingsServer.bill;
+        this.bill.createBill(user,this.ips);
+        return this.bill;
     }
     
     public synchronized long getnewID()

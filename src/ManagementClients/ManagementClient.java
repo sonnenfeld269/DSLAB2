@@ -217,7 +217,6 @@ public class ManagementClient implements Runnable {
                                 String user = split[1];
                                 String report = bss.getBill(user).toString();
                                 System.out.println("Bill of User " + user + " is as follows: \n" + report);
-                                logger.info("Bill of User " + user + " is as follows: \n" + report);
                             } catch (Exception e) {
                                 logger.error("A  bill for User could not be created." + e.getMessage());
                             }

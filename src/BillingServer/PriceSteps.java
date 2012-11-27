@@ -10,18 +10,19 @@ import java.util.List;
  */
 public class PriceSteps implements Serializable {
 
-    public List<PriceStep> priceSteps = new ArrayList<PriceStep>();
+    public List<PriceStep> priceSteps = null;
 
     public PriceSteps() {
+        priceSteps = new ArrayList<PriceStep>();
         initDefaultPriceSteps();
     }
 
-    public void createPriceStep(double min_value, double max_value, double fee_fixed, double fee_variable) {
+    public synchronized void createPriceStep(double min_value, double max_value, double fee_fixed, double fee_variable) {
         PriceStep ps = new PriceStep(min_value, max_value, fee_fixed, fee_variable);
         priceSteps.add(ps);
     }
 
-    public void deletePriceStep(double min_value, double max_value) {
+    public synchronized void deletePriceStep(double min_value, double max_value) {
         for (PriceStep ps : priceSteps) {
             if (ps.getMin_value() == min_value && ps.getMax_value() == max_value) {
                 priceSteps.remove(ps);
@@ -50,7 +51,7 @@ public class PriceSteps implements Serializable {
      * @param max_value
      * @return false if overlap or negative, else return true
      */
-    public boolean check(double min_value, double max_value) {
+    public  boolean  check(double min_value, double max_value) {
         for (PriceStep ps : priceSteps) {
             if (min_value >= ps.getMin_value() && min_value < ps.getMax_value()) {
                 return false;

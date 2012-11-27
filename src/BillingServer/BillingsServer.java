@@ -19,11 +19,14 @@ public class BillingsServer implements Runnable {
 
     private Logger logger = null;
     private RMIRegistry registry = null;
-    private BillingServerInterface bsi = null;
-    private Executor pool = null;
-    static PriceSteps ips = new PriceSteps();
-    static Bill bill = new Bill();
-
+    //private BillingServerInterface bsi = null;
+    //private Executor pool = null;
+    
+   
+    
+    private BillingServerInterfaceImpl BSII=null;
+    private BillingServerSecureImpl BSSI=null;
+    
     public BillingsServer(String propertyFile) {
         try {
             logger = LogManager.getLogger(BillingsServer.class);
@@ -32,15 +35,21 @@ public class BillingsServer implements Runnable {
                 registry.startRegistry();
                 logger.info("Registry successfully started by BillingsServer");
             }
-            registry.registerObject(BillingServerInterface.class.getSimpleName(), (new BillingServerInterfaceImpl()));
+            BSII=new BillingServerInterfaceImpl();
+            BSSI=new BillingServerSecureImpl();
+            
+            BSII.initialize(BSSI);
+            
+            registry.registerObject(BillingServerInterface.class.getSimpleName(), BSII);
             logger.info("BillingServerInterface was successfully registered to the Registry");
+            
         } catch (RemoteException ex) { // java 7 wird bei der abgabe nicht unterstützt
             logger.catching(ex);
         } catch (RMIRegistryException ex) {
             logger.catching(ex);
         }
     }
-
+    
     public void run() {
         logger.info("BillingServer started...");
         String line = null;
