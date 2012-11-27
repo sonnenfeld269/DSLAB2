@@ -31,14 +31,6 @@ public class Filter {
     
     }
     
-    public Filter(long filterID)
-    {
-        this.logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+Filter.class.getSimpleName());
-        filterID=filterID;
-        RegexFilterMap= new ConcurrentHashMap<Long,Pattern>();
-    
-    }
-    
     public int getSubscriberSize()
     {
         return RegexFilterMap.size();
@@ -48,7 +40,7 @@ public class Filter {
     boolean checkMessage(String message)
     {
        Iterator<Map.Entry<Long,Pattern>> iter = this.RegexFilterMap.entrySet().iterator();
-       logger.debug("Check message: '"+message+"' in the filtersystem.");
+       logger.debug("Check message: '"+message+"' in the Filter ID "+this.filterID+".");
         while(iter.hasNext())
         {
             Map.Entry<Long,Pattern> entry = iter.next();

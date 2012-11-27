@@ -39,6 +39,7 @@ public class AnalyticsServer {
     private LinkedBlockingQueue<Task> toamsincomechannel=null;
     private LinkedBlockingQueue<Task.RESULT> amstormisoutcomechannel=null;
     private LinkedBlockingQueue<Event> distributorincomechannel=null;
+    private LinkedBlockingQueue<Event> statisticincomechannel=null;
     private AnalyticsServerInterfaceImpl ASII=null;
     private AnalyticsManagementSystem AMS =null; 
     public AnalyticsServer (String propertyFile)
@@ -59,14 +60,18 @@ public class AnalyticsServer {
             toamsincomechannel=new LinkedBlockingQueue<Task>();
             amstormisoutcomechannel=new LinkedBlockingQueue<Task.RESULT>();
             distributorincomechannel=new LinkedBlockingQueue<Event>();
+            statisticincomechannel=new LinkedBlockingQueue<Event>();
             
             pool= Executors.newCachedThreadPool();
-            AMS = new AnalyticsManagementSystem(pool,toamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
+            AMS = new AnalyticsManagementSystem(pool,
+                    toamsincomechannel,amstormisoutcomechannel,
+                    distributorincomechannel,statisticincomechannel);
             //start objects necessary for management
             pool.execute(AMS);
             
             ASII=new AnalyticsServerInterfaceImpl();
-            ASII.initialize(toamsincomechannel,amstormisoutcomechannel,distributorincomechannel);
+            ASII.initialize(toamsincomechannel,amstormisoutcomechannel
+                    ,distributorincomechannel,statisticincomechannel);
 
             /**
              * Register all neccessary RemoteObjects to the registry
@@ -111,7 +116,10 @@ public class AnalyticsServer {
     
     public void close()
     {
-        this.AMS.close();
+        //send AuctionManagementSystem the kill message
+        Task.CLOSE close=new Task.CLOSE();
+        toamsincomechannel.offer(new Task(close));
+        //this.AMS.close();
         if(!pool.isShutdown())
         pool.shutdown(); // Disable new tasks from being submitted
         try {

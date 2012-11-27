@@ -23,6 +23,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     private LinkedBlockingQueue<Task> ToAmsChannel=null;
     private LinkedBlockingQueue<Task.RESULT> FromAmsChannel=null;
     LinkedBlockingQueue<Event> distributorchannel=null;
+    LinkedBlockingQueue<Event> statisticincomechannel=null;
     private Logger logger=null;
     
     public AnalyticsServerInterfaceImpl() throws RemoteException {
@@ -31,20 +32,24 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
 
     public void initialize(LinkedBlockingQueue<Task> ToAmsChannel,
             LinkedBlockingQueue<Task.RESULT> FromAmsChannel,
-            LinkedBlockingQueue<Event> distributorchannel)
+            LinkedBlockingQueue<Event> distributorchannel,
+            LinkedBlockingQueue<Event> statisticincomechannel)
     {
        
         logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
         this.ToAmsChannel=ToAmsChannel;
         this.FromAmsChannel=FromAmsChannel;
         this.distributorchannel=distributorchannel;
+        this.statisticincomechannel=statisticincomechannel;
 
     }
 
     @Override
     public void processEvents(Event e) throws RemoteException {
-        logger.debug("AnalyticsServerInterfaceImpl:RMI send an Event to the distributorChannel.");
+        logger.debug("AnalyticsServerInterfaceImpl:RMI send an Event "
+                +" to the distributorChannel and StatisticChannel.");
         this.distributorchannel.offer(e);
+        this.statisticincomechannel.offer(e);
     }
 
     @Override
@@ -82,7 +87,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
             logger.info("Wait for unsubscribe resul status.");
             b=getResultFromAMS(subsciptionID);
             logger.info("Get result status "+b+" from AnalyticManagementSystem"
-                    +"for subscription ID "+subsciptionID);
+                    +"to unsubscribe subscriptionID "+subsciptionID);
         }catch(InterruptedException ex)
         {
              logger.catching(ex);

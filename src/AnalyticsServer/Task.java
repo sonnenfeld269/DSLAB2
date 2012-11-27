@@ -16,26 +16,47 @@ import RMI.ManagementClientCallBackInterface;
             private SUBSCRIBER   subscriber=null;
             private UNSUBSCRIBER unsubscriber=null;
             private REMOTEERROR  remoteerror=null;
+            private CLOSE        close=null;
             private boolean isSubscriber;
+            private boolean isUnsubscriber;
             private boolean isRemoteError;
+            private boolean isClose;
         
         public Task(SUBSCRIBER   subscriber)
         {
             isSubscriber=true;
+            isUnsubscriber=false;
+            isRemoteError=false;
+            isClose=false;
             this.subscriber=subscriber;
         }
         
         public Task(UNSUBSCRIBER   unsubscriber)
         {
-            isSubscriber=false;
+           isSubscriber=false;
+           isUnsubscriber=true;
+           isRemoteError=false;
+           isClose=false;
            this.unsubscriber=unsubscriber; 
         }
         
         public Task(REMOTEERROR   error)
         {
             isSubscriber=false;
+            isUnsubscriber=false;
             isRemoteError=true;
+            isClose=false;
             this.remoteerror=error;
+           
+        }
+        
+        public Task(CLOSE close)
+        {
+            isSubscriber=false;
+            isUnsubscriber=false;
+            isRemoteError=false;
+            isClose=true;
+            this.close=close;
            
         }
         
@@ -45,9 +66,19 @@ import RMI.ManagementClientCallBackInterface;
             return this.isSubscriber;
         }
         
+        public boolean isUnsubscriber()
+        {
+            return this.isUnsubscriber;
+        }
+        
         public boolean isRemoteError()
         {
             return this.isRemoteError;
+        }
+        
+        public boolean isClose()
+        {
+            return this.isClose;
         }
         
         public SUBSCRIBER getSubscriber()
@@ -59,13 +90,16 @@ import RMI.ManagementClientCallBackInterface;
         
         public UNSUBSCRIBER getUnSubscriber()
         {
-            if(!isSubscriber)
+            if(isUnsubscriber)
                 return this.unsubscriber;
             else return null;
         }
         public REMOTEERROR getRemoteError()
         {
-            return this.remoteerror;
+            if(isRemoteError)
+                return this.remoteerror;
+            else
+                return null;
         }
         
     
@@ -124,6 +158,11 @@ import RMI.ManagementClientCallBackInterface;
                 
             }
     
+        }
+        
+        public static class CLOSE
+        {
+           //only a marker 
         }
     
     }

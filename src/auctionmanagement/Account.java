@@ -9,6 +9,7 @@ import communication.Client;
 import communication.ClientException;
 import communication.ClientUDP;
 import communication.ClientUDPException;
+import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -26,6 +27,7 @@ public class Account {
     private String client_host=null;
     private int tcpport=-1;
     private int udpport=-1;
+    private Date lastloginTimestamp=null;;
     
     LinkedBlockingQueue<Notification> notificationchannel=null;
   
@@ -71,7 +73,7 @@ public class Account {
         this.client_host=client.getDestinationHost();
         this.tcpport=client.getDestinationPort();
         this.udpport=udpPort;
-        
+        this.lastloginTimestamp=new Date();
         if(this.hasNotifications())
         {
             
@@ -84,6 +86,11 @@ public class Account {
         }
         
         
+    }
+    //timestamp in ms
+    public long getLastLoginTime()
+    {
+        return this.lastloginTimestamp.getTime();
     }
     
     public void deactivateAccount()

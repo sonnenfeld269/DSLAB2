@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class ManagementClient implements Runnable {
 
-    private static long counter = 0;
+   
     private Logger logger = null;
     private RMIRegistry registry = null;
     private ManagementClientCallBackInterfaceImpl mccbi = null;
@@ -43,7 +43,7 @@ public class ManagementClient implements Runnable {
             try {
                 analytic = registry.getAnalyticsInterface();
                 mccbi = new ManagementClientCallBackInterfaceImpl();
-                mccbi.initializeManagementClient(this.getID(), logger);
+                mccbi.initializeManagementClient();
                 analyticIsAvaible = true;
             } catch (RMIRegistryException ex) {
                 this.logger.error("Error:Analytics Server not avaible.");
@@ -108,11 +108,15 @@ public class ManagementClient implements Runnable {
                                     logger.debug("Send subscription request to AnalyticServer.");
                                     sub_id = analytic.subscribe(mccbi, regex);
                                     //regular output
-                                    System.out.print("Created subscription with ID " + sub_id
+                                    System.out.println("Created subscription with ID " + sub_id
                                             + " for events using filter"
                                             + " '"
                                             + regex
                                             + "' ");
+                                    logger.debug("ManagementCallback Object was "
+                                            +"initialized with ClientID "
+                                            +mccbi.getLocalClientID()
+                                            +" from AnalyticServer.");
                                 } catch (RemoteException ex) {
                                     System.out.print("Error:managmentClient:"
                                             + "run:subscribe:RemoteException:"
@@ -120,33 +124,39 @@ public class ManagementClient implements Runnable {
                                 }
                             }
                             logger.exit();
-                        }else if (line.contains("!unsubscribe")
-                                && this.analyticIsAvaible) {
-                           logger.entry();
+                        }else if (line.contains("!unsubscribe") && this.analyticIsAvaible) {
+                            logger.entry();
 
-                           
-                            String[] s = line.split(" ");
-                            long id = Long.getLong(s[1]);
                             try {
                                 boolean b;
+                                String[] s = line.split(" ");
+                                
+                                long id =Long.parseLong(s[1]);
                                 logger.debug("Send request to unsubscribe ID "
                                         +id);
                                 b = analytic.unsubscribe(id);
                                 if (b) {
-                                    System.out.print("subscription"
+                                    System.out.println("subscription "
                                             + id
-                                            + "terminated ");
+                                            + " terminated. ");
                                 } else {
-                                    System.out.print("Error:unsubscribe id "
+                                    System.out.println("Error:unsubscribe id "
                                             + id
-                                            + "was not successfull.");
+                                            + " was not successfull.");
                                 }
                             } catch (RemoteException ex) {
-                                System.out.print("Error:managmentClient:"
+                                System.out.println("Error:ManagementClient:"
                                         + "run:unsubscribe:RemoteException:"
                                         + ex.getMessage());
+                            } catch (NumberFormatException e) {
+                                logger.error("Error:ManagementClient:"
+                                        + "run:unsubscribe:NumberFormatException:"
+                                        +e.getMessage());
+                                //System.out.print("ERROR:" + e.getMessage());
                             } catch (Exception e) {
-                                System.out.print("ERROR:" + e.getMessage());
+                                logger.error("Error:ManagementClient:"
+                                        + "run:unsubscribe:"+e.getMessage());
+                                //System.out.print("ERROR:" + e.getMessage());
                             }
                           logger.exit();
 
@@ -230,9 +240,7 @@ public class ManagementClient implements Runnable {
         }
     }
 
-    private synchronized long getID() {
-        return counter++;
-    }
+  
     
     public String printUsageofCommand(String command)
     {

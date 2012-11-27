@@ -15,6 +15,7 @@ import RMI.BillingServerSecure;
 import RMI.RMIRegistry;
 import RMI.RMIRegistryException;
 import java.rmi.RemoteException;
+import java.util.Date;
 /**
  * ********* RMI ******************************
  */
@@ -189,9 +190,11 @@ public class AuctionManagementSystem implements Runnable {
             try {
                 if (rmiAvailable) {
                     if (rmiAnalyticAvailable) {
-                        analytic.processEvents(
-                                new AuctionEvent(AuctionEvent.AuctionType.AUCTION_ENDED,
-                                auc.getID()));
+                        AuctionEvent auctionevent=new AuctionEvent(
+                                AuctionEvent.AuctionType.AUCTION_ENDED,
+                                auc.getID());
+                        auctionevent.setTime(auc.getPeriodofTime()*1000);
+                        analytic.processEvents(auctionevent);
                         logger.output("TimerTask:RMI"
                                 + ":processEvent:Invoke::"
                                 + "AuctionID:" + auc.getID() + "\n"
@@ -211,6 +214,7 @@ public class AuctionManagementSystem implements Runnable {
                         }
                         //rmiAnalyticsAvaible
                     }
+
                     
                     if (rmiBillingAvailable) {
                         /*BillingServer RMI Method Invocation*/
@@ -222,6 +226,7 @@ public class AuctionManagementSystem implements Runnable {
                         }
                         /*BillingServer RMI Method Invocation*/
                     }//rmiBillingAvaible
+
 
                 }//rmiAvaible
             } catch (RemoteException ex) {
@@ -439,10 +444,16 @@ public class AuctionManagementSystem implements Runnable {
                              */
                             try {
                                 if (rmiAvailable && rmiAnalyticAvailable) {
-                                    
-                                    analytic.processEvents(
-                                            new UserEvent(commandtask.logout.user,
-                                            UserEvent.UserEventType.USER_LOGOUT));
+                                    Date now=new Date();
+                                    UserEvent userevent=new UserEvent(
+                                            commandtask.logout.user,
+                                            UserEvent.UserEventType.USER_LOGOUT);
+                                    long time=now.getTime()-ac.getLastLoginTime();
+                                    userevent.setTime(time);
+                                    logger.output("RMI:logout:Login time of "
+                                            +ac.getName()
+                                            +" is "+time+" ms.");
+                                    analytic.processEvents(userevent);
                                     logger.output("AMSHandlerThread:logout:RMI"
                                             + ":processEvent:Invoke::"
                                             + "User:" + commandtask.logout.user, 3);

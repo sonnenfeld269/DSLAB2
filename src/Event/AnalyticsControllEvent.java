@@ -28,6 +28,7 @@ public class AnalyticsControllEvent extends Event {
     {
         CLOSE_FILTER,
         CLOSE_DISTRIBUTOR,
+        CLOSE_STATISTIC,
         ERROR_SUBSCRIPTION,
         ERROR_UNSUBSCRIPTION
         

@@ -10,6 +10,7 @@ package Event;
  */
 public class AuctionEvent extends  Event {
     private long auctionID=0;
+    private long time=0;
     
     public AuctionEvent(AuctionEvent.AuctionType type,long auctionID)
     {
@@ -22,11 +23,25 @@ public class AuctionEvent extends  Event {
     {
         super(e);
         this.auctionID=e.auctionID;
+        this.time=e.time;
     }
     
     public long getAuctionID()
     {
         return this.auctionID;
+    }
+    
+    public long getAuctionTime()
+    {
+        return this.time;
+    }
+    
+    public void setTime(long time)
+    {
+        if(super.getType().contains(AuctionType.AUCTION_ENDED.name()) )
+        {
+           this.time=time; 
+        }
     }
     
     public static enum AuctionType
