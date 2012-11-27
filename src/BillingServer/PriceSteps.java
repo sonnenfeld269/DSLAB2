@@ -1,7 +1,9 @@
 package BillingServer;
 
 import java.io.Serializable;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -22,12 +24,16 @@ public class PriceSteps implements Serializable {
         priceSteps.add(ps);
     }
 
-    public synchronized void deletePriceStep(double min_value, double max_value) {
-        for (PriceStep ps : priceSteps) {
+    public synchronized boolean deletePriceStep(double min_value, double max_value){
+        Iterator<PriceStep> it = priceSteps.iterator();
+        while (it.hasNext()) {
+            PriceStep ps = it.next();
             if (ps.getMin_value() == min_value && ps.getMax_value() == max_value) {
-                priceSteps.remove(ps);
-            }
+                it.remove();
+                return true;
+            } 
         }
+        return false;
     }
 
     private void initDefaultPriceSteps() {

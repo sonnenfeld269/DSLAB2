@@ -44,7 +44,8 @@ public class BillingServerSecureImpl extends UnicastRemoteObject implements Bill
     @Override
     public void deletePriceStep(double min_value, double max_value) throws RemoteException {
         logger.debug("Inside deletePriceStep");
-        this.ips.deletePriceStep(min_value, max_value);
+        if(!this.ips.deletePriceStep(min_value, max_value))
+            throw new RemoteException("PriceStep could not be deleted. False Range Definitions.");
     }
 
     @Override
