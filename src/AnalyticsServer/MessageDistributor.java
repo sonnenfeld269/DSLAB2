@@ -69,18 +69,19 @@ public class MessageDistributor implements Runnable{
      logger.exit();
     }
    
-    public  Long registerOutcomingMember(LinkedBlockingQueue<Event> lbq)throws MessageDistributorException
+    public  Long registerOutcomingMember(long channelID,LinkedBlockingQueue<Event> lbq)throws MessageDistributorException
     {
         logger.entry();
-        
-        Long id=this.getID();
+        //ClientID=FILTERID=ChannelID
+        Long id=new Long(channelID);
         this.outcomingdistributor.put(id, lbq);
+        logger.debug("Registered a new channel in the distributor List with Channel ID"+channelID);
         if(!this.outcomingdistributor.containsKey(id))
         {
             logger.error("Hashmap registration unsuccesfull.");
             throw new MessageDistributorException("Hashmap registration unsuccesfull.");
         }
-        logger.debug("Add new queue to outcomingdistributor.");
+        logger.trace("Added new queue to outcomingdistributor.");
         logger.exit();
         return id;
         
@@ -113,12 +114,27 @@ public class MessageDistributor implements Runnable{
     
     public void close()
     {
-        logger.debug("Close  MessageDistributor");
-         if(!this.outcomingdistributor.isEmpty())
-         {
-             this.outcomingdistributor.clear();
-             this.incomingchannel=null;
-             this.outcomingdistributor=null;
-         }
+        logger.debug("Closing MessageDistributor and all ressources.");
+        if(!this.outcomingdistributor.isEmpty())
+        {
+            Event event=null;    
+           Iterator<Map.Entry<Long,LinkedBlockingQueue<Event>>> iter = outcomingdistributor.entrySet().iterator();
+           while(iter.hasNext())
+           {
+                Map.Entry<Long,LinkedBlockingQueue<Event>> entry = iter.next(); 
+                event=new AnalyticsControllEvent(entry.getKey().longValue(),
+                    AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_FILTER);
+                entry.getValue().offer(event);
+           }
+           logger.debug("Send kill message to al MCClientHandler");
+        }
+       
+        
+         this.outcomingdistributor.clear();
+         this.incomingchannel=null;
+         this.outcomingdistributor=null;
+         
+          logger.trace("Closing  MessageDistributor finished.");
+         
     }
 }

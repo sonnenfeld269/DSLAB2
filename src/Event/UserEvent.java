@@ -12,18 +12,19 @@ package Event;
 
 public class UserEvent extends  Event {
     private String userName=null; 
+    private long time=0;
     
     public UserEvent(String userName,UserEvent.UserEventType type)
     {
         super(type.name());
         this.userName=userName;
-       
-        
+
     }
     public UserEvent(UserEvent e)
     {
         super(e);
         this.userName=e.userName;
+        this.time=e.time;
     }
     
     public String getUserName()
@@ -31,6 +32,19 @@ public class UserEvent extends  Event {
         return this.userName;
     }
     
+    public long getUserTime()
+    {
+        return this.time;
+    }
+    
+    public void setTime(long time)
+    {
+        if(super.getType().contains(UserEventType.USER_LOGOUT.name())||
+             super.getType().contains(UserEventType.USER_DISCONNECTED.name()) )
+        {
+           this.time=time; 
+        }
+    }
     public static enum UserEventType
     {
         USER_LOGIN,

@@ -44,7 +44,7 @@ public class Auction {
     
     public long getPeriodofTime()
     {
-        return this.duration;
+        return this.duration;//in seconds
     }
     
     public String getstartDate()

@@ -4,6 +4,7 @@
  */
 package AnalyticsServer;
 
+import Event.AnalyticsControllEvent;
 import Event.Event;
 import RMI.ManagementClientCallBackInterface;
 import java.rmi.RemoteException;
@@ -32,13 +33,16 @@ public class AnalyticsManagementSystem implements Runnable {
     private LinkedBlockingQueue<Task> toamsincomechannel=null;//from rmi or an Client Handler
     private LinkedBlockingQueue<Task.RESULT> amstormisoutcomechannel=null;
     private LinkedBlockingQueue<Event> distributorincomechannel=null;
+     private LinkedBlockingQueue<Event> statisticsincomechannel=null;
     /*Handler*/
     private MessageDistributor MD =null;
+    private StatisticHandler   SH =null;
     
     public AnalyticsManagementSystem(ExecutorService pool,
             LinkedBlockingQueue<Task> toamsincomechannel,
             LinkedBlockingQueue<Task.RESULT> amstormisoutcomechannel,
-            LinkedBlockingQueue<Event> distributorincomechannel)
+            LinkedBlockingQueue<Event> distributorincomechannel,
+            LinkedBlockingQueue<Event> statisticsincomechannel)
     {
         this.logger=LogManager.getLogger(LogManager.ROOT_LOGGER_NAME+
                 "."+AnalyticsManagementSystem.class.getSimpleName());
@@ -50,8 +54,10 @@ public class AnalyticsManagementSystem implements Runnable {
         this.toamsincomechannel=toamsincomechannel;
         this.amstormisoutcomechannel=amstormisoutcomechannel;
         this.distributorincomechannel=distributorincomechannel;
+        this.statisticsincomechannel=statisticsincomechannel;
         
         MD=new MessageDistributor(this.distributorincomechannel);
+        SH=new StatisticHandler(this.pool,this.statisticsincomechannel,this.distributorincomechannel);
         
     }
     
@@ -61,6 +67,9 @@ public class AnalyticsManagementSystem implements Runnable {
         //start Distributor
         pool.execute(MD);
         logger.debug("Message Distributor started.");
+        //start StatisticcHandler
+        pool.execute(SH);
+        logger.debug("StatisticHandler started.");
        
         
         Task task;
@@ -74,7 +83,13 @@ public class AnalyticsManagementSystem implements Runnable {
                logger.trace("Wait for incoming Task from RMI.");
                task=this.toamsincomechannel.take();
                //get a remoterror task from a client handler
-               if(task.isRemoteError())
+               if(task.isClose())
+               {
+                   logger.trace("Incoming Task is a CLOSE Request.");
+                   Thread.currentThread().interrupt();
+                   //get out from while loop
+  
+               }else if(task.isRemoteError())
                {
                    logger.trace("Incoming Task is a RemoteErrorType.");
                    Task.REMOTEERROR error = task.getRemoteError();
@@ -85,7 +100,7 @@ public class AnalyticsManagementSystem implements Runnable {
                 
                }
                else if(task.isSubscriber())
-                {
+               {
                    /************SUBSCRIBER****************/
                    logger.trace("Incoming Task is a Subscriber Type.");
                    Long clientId=null;
@@ -148,7 +163,7 @@ public class AnalyticsManagementSystem implements Runnable {
                            //the new incoming channel must be registered in the distributor
                            //all new events will be put on this new channel
                            logger.trace("Add new Channel for the new ClientHandler inside Distributor.");
-                           this.MD.registerOutcomingMember(lbq);
+                           this.MD.registerOutcomingMember(clientId,lbq);
                            logger.trace("Start the new MClienHandler.");
                            MClientHandler handler=new MClientHandler(clientId
                                    ,filter
@@ -182,7 +197,7 @@ public class AnalyticsManagementSystem implements Runnable {
                    this.amstormisoutcomechannel.offer(result);
                    
                    
-                }else
+                }else if(task.isUnsubscriber())
                 {
                     /************UNSUBSCRIBER****************/
                    
@@ -260,15 +275,38 @@ public class AnalyticsManagementSystem implements Runnable {
            
             
         }
-         logger.debug("AnalyticsManagemenSystem Handler closed...");
-    logger.exit();
+        this.close();
+        logger.debug("AnalyticsManagemenSystem Handler closed...");
+        logger.exit();
     }
     
      public void close()
-     {
-         //close all resources
+     {  
+         logger.debug("Closing AnalyticManagementSystem and all his resources.");
+         AnalyticsControllEvent closeStatistic=new AnalyticsControllEvent(0,
+                 AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_STATISTIC);
          
+         AnalyticsControllEvent closeDistributor=new AnalyticsControllEvent(0,
+                 AnalyticsControllEvent.AnalyticsControllEventType.CLOSE_DISTRIBUTOR);
          
+         this.statisticsincomechannel.offer(closeStatistic);
+         this.distributorincomechannel.offer(closeDistributor);
+         
+         this.amstormisoutcomechannel.clear();
+         this.toamsincomechannel.clear();
+         this.mclient_map.clear();
+         this.statisticsincomechannel.clear();
+         this.subscription_map.clear();
+         this.distributorincomechannel.clear();
+         
+         this.statisticsincomechannel=null;
+         this.distributorincomechannel=null;
+         this.amstormisoutcomechannel=null;
+         this.toamsincomechannel=null;
+         this.mclient_map=null;
+         this.statisticsincomechannel=null;
+         this.subscription_map=null;
+         logger.trace("Closing AnalyticManagementSystem finished");
          
          
          
