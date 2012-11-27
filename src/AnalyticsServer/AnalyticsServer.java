@@ -41,8 +41,9 @@ public class AnalyticsServer {
     private LinkedBlockingQueue<Event> distributorincomechannel=null;
     private LinkedBlockingQueue<Event> statisticincomechannel=null;
     private AnalyticsServerInterfaceImpl ASII=null;
-    private AnalyticsManagementSystem AMS =null; 
-    public AnalyticsServer (String propertyFile)
+    private AnalyticsManagementSystem AMS =null;
+    
+    public AnalyticsServer (String propertyFile, String analyticBindingName)
     {
         try {
            // logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
@@ -76,8 +77,7 @@ public class AnalyticsServer {
             /**
              * Register all neccessary RemoteObjects to the registry
              **/
-            registry.registerObject(AnalyticsServerInterface.class.getSimpleName(),
-                   ASII);
+            registry.registerObject(analyticBindingName,ASII);
             
         }catch ( RemoteException ex) {
             logger.catching(ex);

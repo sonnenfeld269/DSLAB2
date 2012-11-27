@@ -65,7 +65,7 @@ public class AuctionManagementSystem implements Runnable {
     }
 
     //public ----------------------------------------- 
-    public AuctionManagementSystem(LinkedBlockingQueue<CommandTask> incomingrequest, ExecutorService pool, Log output) {
+    public AuctionManagementSystem(String analyticBinding, String billingBinding,LinkedBlockingQueue<CommandTask> incomingrequest, ExecutorService pool, Log output) {
         this.pool = pool;
         this.logger = output;
         this.incomingrequest = incomingrequest;
@@ -89,7 +89,7 @@ public class AuctionManagementSystem implements Runnable {
             if (registry.getRegistry() != null) {
                 rmiAvailable = true;
                 try {
-                    analytic = registry.getAnalyticsInterface();
+                    analytic = registry.getAnalyticsInterface(analyticBinding);
                     rmiAnalyticAvailable = true;
                 } catch (RMIRegistryException ex) {
                     this.logger.output("AuctionManagementSystem:RMIRegistryException:" + ex.getMessage(), 2);
@@ -98,10 +98,12 @@ public class AuctionManagementSystem implements Runnable {
                 }
 
                 try {
-                    billing = registry.getBillingInterface();
-                    bss = registry.getBillingInterface().login("auctionServer", "44");
-                    if (bss != null) {
-                        logger.output("AuctionManagementSystem:RMI: bss aviable", 2);
+
+                    billing = registry.getBillingInterface(billingBinding);
+                    bss= registry.getBillingInterface(billingBinding).login("auctionServer", "44");
+                    if(bss != null){
+                            logger.output("AuctionManagementSystem:RMI: bss aviable",2);
+
                     } else {
                         logger.output("AuctionManagementSystem:RMI: No BillingInterface aviable");
                         throw new RMIRegistryException("BSS not aviable!");
@@ -221,8 +223,10 @@ public class AuctionManagementSystem implements Runnable {
                     if (rmiBillingAvailable) {
                         /*BillingServer RMI Method Invocation*/
                         logger.output("rmiBilling Aviable, billAuction to happen soon.", 2);
-                        if (bss != null) {
-                            bss.billAuction(auc.getHighestBidder(), auc.getID(), auc.getHighestBid());
+
+                        if(bss != null){
+                            bss.billAuction(auc.getOwner(), auc.getID(), auc.getHighestBid());
+
                         } else {
                             logger.output("AuctionManagementSystem: No bss aviable", 2);
                         }

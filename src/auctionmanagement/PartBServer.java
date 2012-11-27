@@ -25,6 +25,9 @@ public class PartBServer {
      String[] arguments=null;
      int tcpPort=0;
      AuctionServer auction=null;
+     String billing = null;
+     String analytic = null;
+     
      
     public PartBServer(String[] args)
     {
@@ -37,6 +40,9 @@ public class PartBServer {
         if(arguments.length != 1)
                   return false;
         tcpPort=Integer.valueOf(arguments[0]);
+        analytic = arguments[1];
+        billing=arguments[2];
+        
         
        
        return true;
@@ -66,7 +72,7 @@ public class PartBServer {
        
        
         try {
-            auction = new AuctionServer(this.tcpPort,output);
+            auction = new AuctionServer(this.tcpPort,analytic,billing,output);
             auction.run();
         } catch (AuctionServerException e) {
             output.output("PartBServer:"+e.getMessage());

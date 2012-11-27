@@ -35,13 +35,13 @@ public class AuctionServer implements Runnable{
     private Log output=null;
     //Alle Server.Handler schreiben auf die queue, nur das ActionmanagementSystem darf
     //von der queue lesen [blockierend]
-    public AuctionServer(int tcpPort,Log output)throws AuctionServerException
+    public AuctionServer(int tcpPort,String analytic, String billing,Log output)throws AuctionServerException
     {
        this.output=output;
        //communication between ServerSocketHandleThread and AMSHandlerThread
        queue = new LinkedBlockingQueue<CommandTask>();
        pool = Executors.newCachedThreadPool();
-       ams= new AuctionManagementSystem(queue,pool,output);
+       ams= new AuctionManagementSystem(analytic, billing, queue,pool,output);
        output.output("AuctionServer Port:"+tcpPort+"", 3);
        Server.Handler serversocketHandle=new ServerSocketHandleThread(queue,pool,output);
        output.output("AuctionManagementSystem started...");

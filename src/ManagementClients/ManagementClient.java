@@ -28,7 +28,7 @@ public class ManagementClient implements Runnable {
     private boolean analyticIsAvaible = false;
     private boolean billingIsAvaible = false;
 
-    public ManagementClient(String propertyFile) {
+    public ManagementClient(String propertyFile, String analyticBindingName,String billingBindingName) {
         try {
             logger = LogManager.getLogger(ManagementClient.class.getSimpleName());
             /**
@@ -41,7 +41,7 @@ public class ManagementClient implements Runnable {
              * ***AnalyticServer Part*******
              */
             try {
-                analytic = registry.getAnalyticsInterface();
+                analytic = registry.getAnalyticsInterface(analyticBindingName);
                 mccbi = new ManagementClientCallBackInterfaceImpl();
                 mccbi.initializeManagementClient();
                 analyticIsAvaible = true;
@@ -56,7 +56,7 @@ public class ManagementClient implements Runnable {
              * ***BillingServer initialization Part*******
              */
             try {
-                billing = registry.getBillingInterface();
+                billing = registry.getBillingInterface(billingBindingName);
                 billingIsAvaible = true;
             } catch (RMIRegistryException ex) {
                 this.logger.error("Error:Billing Server not avaible.");
@@ -209,6 +209,7 @@ public class ManagementClient implements Runnable {
                                 System.out.println("Price step with values " + min_price + "," + max_price + " was deleted successfully.");
                             } catch (Exception e) {
                                 logger.error("Price step could not be deleted!");
+                                e.printStackTrace();
                             }
                         } else if (line.contains("!bill") && this.billingIsAvaible) {
                             try {
@@ -217,8 +218,10 @@ public class ManagementClient implements Runnable {
                                 String user = split[1];
                                 String report = bss.getBill(user).toString();
                                 System.out.println("Bill of User " + user + " is as follows: \n" + report);
-                            } catch (Exception e) {
-                                logger.error("A  bill for User could not be created." + e.getMessage());
+                            } catch (NullPointerException e) {
+                                logger.info("You must login first.");
+                            } catch (Exception e){
+                                logger.error("A bill could not be created." + e.getMessage());
                             }
                         } else if (line.contains("!logout") && this.billingIsAvaible) {
                             logger.debug("INSIDE MANAGEMENT CLIENT - LOGOUT METHOD");

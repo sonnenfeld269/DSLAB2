@@ -123,7 +123,7 @@ public class RMIRegistry {
     
     
     
-    public AnalyticsServerInterface getAnalyticsInterface() throws RMIRegistryException 
+    public AnalyticsServerInterface getAnalyticsInterface(String analyticBindingName) throws RMIRegistryException 
     {
         if(registry==null)
                 throw new RMIRegistryException("No registry located.");
@@ -131,7 +131,7 @@ public class RMIRegistry {
         AnalyticsServerInterface analytic=null;
         try {
 
-            analytic=(AnalyticsServerInterface) registry.lookup(AnalyticsServerInterface.class.getSimpleName());
+            analytic=(AnalyticsServerInterface) registry.lookup(analyticBindingName);
        
         } catch (RemoteException ex) {
             logger.error("RMIRegistry:getAnalyticsInterface:RemoteException:"+ex.getMessage());
@@ -144,7 +144,7 @@ public class RMIRegistry {
         return analytic;
     }
     
-    public BillingServerInterface getBillingInterface() throws RMIRegistryException 
+    public BillingServerInterface getBillingInterface(String billingBindingName) throws RMIRegistryException 
     {
         if(registry==null)
                 throw new RMIRegistryException("No registry located.");
@@ -152,7 +152,7 @@ public class RMIRegistry {
         BillingServerInterface billing=null;
         try {
 
-            billing=(BillingServerInterface) registry.lookup(BillingServerInterface.class.getSimpleName());
+            billing=(BillingServerInterface) registry.lookup(billingBindingName);
        logger.debug("billingInterface was returned successfully!");
         } catch (RemoteException ex) {
             logger.error("RMIRegistry:getBillingInterface:RemoteException:"+ex.getMessage());
