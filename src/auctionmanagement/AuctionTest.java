@@ -40,7 +40,7 @@ public class AuctionTest implements Runnable {
     
     
     
-    public AuctionTest(String host,int tcpPort,String bindingName) throws AuctionClientException
+    public AuctionTest(String host,int tcpPort,String bindingName,int auctionsPerMin,int auctionDuration,int updateIntervalSec,int bidsPerMin) throws AuctionClientException
     {
         //this.errorlog=output;
         userstatus=new ClientStatus("none");
@@ -64,82 +64,9 @@ public class AuctionTest implements Runnable {
     
     public void run()
     {
-        this.errorlog.output("AuctionClient is running..",2);
-        Request req=null;
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         
-        String line;
-        String msg;
-        this.errorlog.out(">");
-        try {
-            Operation op = new Operation(this.clientTCP);
-           
-            while((line=in.readLine())!=null)
-            {
-                this.errorlog.output("AuctionClient input:"+line,3);
-                try{
-                   
-                   if(this.userstatus.noUser()) 
-                   {
-                        if(line.length()<4)continue;
-                        //this.errorlog.out(">");
-                        req=new Request(line);
-                        if(req.getCommandName().contains("!end"))
-                            break;
-                        else if(req.getCommandName().contains("!login"))
-                        {
-                            this.userstatus.setUser(req.getUserName());
-                            req.setUdpPort(this.udpPort);
-                        }
-                        else if(!req.getCommandName().contains("!list"))
-                            throw (new RequestException("You must be logged in!\n>"));
-                   }
-                    else
-                   {
-                        if(line.length()<4)continue;
-                       // this.errorlog.out(this.userstatus.getUser()+">");
-                        req=new Request(line,this.userstatus.getUser());
-                        if(req.getCommandName().contains("!end"))
-                             throw (new RequestException("You must be logged out!"+"\n"
-                                     +this.userstatus.getUser()+">"));
-                        else  if(req.getCommandName().contains("!logout"))
-                            this.userstatus.resetUser();
-                        else if(req.getCommandName().contains("!login"))
-                            throw (new RequestException("You must log out!"+"\n"
-                                     +this.userstatus.getUser()+">"));
-                   }
-                    
-                   
-                   
-                   msg=req.createRequestStringforServer();
-                   this.errorlog.output("createRequestStringforServer():"+msg,3);
-                   if(msg!=null)
-                        
-                        op.writeString(msg);
-                   else
-                        throw (new RequestException("Cannot generate message!"));
-                        
-                }catch(RequestException e)
-                {
-
-                    this.errorlog.output(e.getMessage(),2);
-                  
-                }
-                 if(userstatus.noUser())
-                        errorlog.output(">");
-                    else
-                        this.errorlog.output(this.userstatus.getUser()+">");
-                this.errorlog.output("AuctionClient wait for input..",3);
-             
-            }
-        } catch (IOException e) {
-           this.errorlog.output("AuctionClientThread:"+e.getMessage());
-        }catch(OperationException e)
-        {
-            this.errorlog.output("AuctionClientThread:"+e.getMessage());
-        }
-         this.errorlog.output("AuctionClient ended..",2);
-        //this.shutdown();
+        
+   
         
     }
     

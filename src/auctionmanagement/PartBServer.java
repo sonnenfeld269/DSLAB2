@@ -37,7 +37,7 @@ public class PartBServer {
     
    public boolean checkandgetArguments()
     {
-        if(arguments.length != 1)
+        if(arguments.length != 3)
                   return false;
         tcpPort=Integer.valueOf(arguments[0]);
         analytic = arguments[1];
@@ -51,7 +51,7 @@ public class PartBServer {
     
     public void printUsage()
     {
-        System.err.println("usage: <run-server>  -tcpPort"
+        System.err.println("usage: <run-server>  -tcpPort -analyticBindingName -billingBindingName"
                 + "\n\t"+"tcpPort:  TCP connection port on which the auction server will "
                 + "\n\t\t"+"receive incomming (command) messages from clients."
              

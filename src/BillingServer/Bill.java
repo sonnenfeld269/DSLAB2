@@ -66,11 +66,22 @@ public class Bill implements Serializable {
 
     private boolean calculateFee(double strike_price, PriceSteps ps) {
         //PriceSteps ps_ = ps;
+        PriceStep last = null;
         for (PriceStep pS : ps.priceSteps) {
+            if (pS.getMin_value() > strike_price) {
+                if (last != null) {
+                    fee_fixed = last.getFee_fixed();
+                    fee_variable = last.getFee_variable() * strike_price;
+                    return true;
+                } else {
+                    return false;
+                }
+            }
             if ((strike_price >= pS.getMin_value() && strike_price <= pS.getMax_value()) || pS.getMax_value() == 0) {
                 fee_fixed = pS.getFee_fixed();
                 fee_variable = pS.getFee_variable() * strike_price;
                 System.out.println("Fee was set successfully.");
+                last = pS;
                 return true;
             }
         }

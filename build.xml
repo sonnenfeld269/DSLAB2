@@ -12,8 +12,8 @@
     <property name="client2.port" value="17802"/><!-- UDP port of 2nd Bidding Client -->
     <property name="client3.port" value="17803"/><!-- UDP port of 3rd Bidding Client -->
     <property name="mgmtclient.name" value="ManagementClient"/><!-- Management Client's full class name (including the package) -->
-    <property name="analytics.name" value="./src/AnalyticsServer/AnalyticsServer.java"/><!-- Analytics Server's full class name (including the package) -->
-    <property name="billing.name" value="./src/BillingServer/BillingServer.java"/><!-- Billing Server's full class name (including the package) -->
+    <property name="analytics.name" value="AnalyticServer"/><!-- Analytics Server's full class name (including the package) -->
+    <property name="billing.name" value="BillingServer"/><!-- Billing Server's full class name (including the package) -->
     <property name="analytics.bindingName" value="AnalyticsServerInterface"/><!-- RMI Binding Name of the Analytics Server -->
     <property name="billing.bindingName" value="BillingsServerInterface"/><!-- RMI Binding Name of the Billing Server -->
     <property name="server.port" value="14450"/><!-- TCP port -->
@@ -21,7 +21,18 @@
     <path id="project.classpath">
         <pathelement location="${build.dir}"/>
     </path>
-
+    
+    <path id="project.classpath">
+    <pathelement location="${build.dir}"/>
+    <fileset dir="lib">
+         <include name="log4j-core-2.0-beta2.jar"/>
+        <include name="log4j-api-2.0-beta2.jar"/>
+        <include name="log4j12-api-2.0-beta2.jar"/>
+         <include name="log4j-flume-ng-2.0-beta2.jar"/>
+          <include name="log4j-jcl-2.0-beta2.jar"/>
+    </fileset>
+</path>
+    
     <target name="compile" description="Compile project.">
         <mkdir dir="${build.dir}"/>
         <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="project.classpath" debug="true" deprecation="true" includeantruntime="false"/>

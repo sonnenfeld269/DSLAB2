@@ -16,7 +16,7 @@ public class PriceSteps implements Serializable {
 
     public PriceSteps() {
         priceSteps = new ArrayList<PriceStep>();
-        initDefaultPriceSteps();
+      //  initDefaultPriceSteps();
     }
 
     public synchronized void createPriceStep(double min_value, double max_value, double fee_fixed, double fee_variable) {
