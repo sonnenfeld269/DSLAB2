@@ -26,11 +26,12 @@ public class LoadTest {
          * 1. Clients instanzieren
          */
 
+        
         for (int i = 0; i < clients; i++) {
             String host = args[0];
             int port = Integer.parseInt(args[1]);
             String bindingName = args[2];
-            AuctionTest at = new AuctionTest(host,port,bindingName);
+            AuctionTest at = new AuctionTest(host,port,bindingName,auctionsPerMin,auctionDuration,updateIntervalSec,bidsPerMin);
             
             //ManagementTest at = new ManagementTest(args[0],args[1],args[2]);
             

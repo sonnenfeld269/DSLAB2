@@ -174,7 +174,6 @@ public class ManagementClient implements Runnable {
                             //provisorisch
                             Thread.currentThread().interrupt();
                             break;
-
                         } 
                         /**
                          * Billing Eingaben****
@@ -213,11 +212,12 @@ public class ManagementClient implements Runnable {
                             }
                         } else if (line.contains("!bill") && this.billingIsAvaible) {
                             try {
-                                logger.debug("Inside !bill command!");
+                                logger.entry();
                                 String[] split = line.split(" ");
                                 String user = split[1];
                                 String report = bss.getBill(user).toString();
                                 System.out.println("Bill of User " + user + " is as follows: \n" + report);
+                                logger.exit();
                             } catch (NullPointerException e) {
                                 logger.info("You must login first.");
                             } catch (Exception e){
@@ -229,7 +229,8 @@ public class ManagementClient implements Runnable {
                             logger.info("USER was sucessfully logged out!");
                         }
                     } catch (Exception ex) {
-                     logger.error("ERROR:" + ex.getMessage());
+                     logger.error("There was an error. Check if you are logged in.");
+                     logger.catching(ex);
                     }
                 }// while ((line = in.readLine()) != null) 
 

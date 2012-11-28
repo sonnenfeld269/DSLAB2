@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author sanker
  */
-public class AuctionClient implements Runnable {
+public class AuctionClient {
    
     private final ExecutorService pool;
     private ServerUDP serverUDP=null;

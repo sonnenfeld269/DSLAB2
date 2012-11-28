@@ -29,25 +29,28 @@ public class PartBClient {
     private  Log output=null;
     
     public PartBClient(String[] args) {
-         arguments=args;
+       
+        arguments=args;
          
          output=new Log(new PrintWriter(System.out),0); 
     }
     
    public boolean checkandgetArguments()
     {
-        if(arguments.length != 3)
-               return false;
+//        if(arguments.length != 3)
+//               return false;
         host = this.arguments[0];
-        try{
+   //     try{
             tcpPort=Integer.parseInt(this.arguments[1]);
             udpPort=Integer.parseInt(this.arguments[2]);
-        }catch(NumberFormatException e)
-        {
-            return false;
-        }
-        
-       return true;
+            System.out.println("HOST " + host + "PORTS: " + tcpPort + " : " +udpPort);
+            return true;
+//        }catch(NumberFormatException e)
+//        {
+//            return false;
+//        }
+//        
+//       return true;
     }
     
     
@@ -66,7 +69,7 @@ public class PartBClient {
     {
        
        output.output("Running PartB Client...",2);
-         if(!this.checkandgetArguments()) 
+         if(!this.checkandgetArguments())
         {
             this.printUsage();
             return -1;
