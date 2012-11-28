@@ -68,7 +68,7 @@ public class PartBServer {
             this.printUsage();
             return -1;
         }
-       Log output=new Log(new PrintWriter(System.out),2); 
+       Log output=new Log(new PrintWriter(System.out)); 
        
        
         try {
