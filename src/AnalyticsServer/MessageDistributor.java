@@ -10,8 +10,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -21,17 +21,18 @@ public class MessageDistributor implements Runnable{
     private static long counter=0;
     private LinkedBlockingQueue<Event> incomingchannel=null;   
     private ConcurrentHashMap<Long,LinkedBlockingQueue<Event>> outcomingdistributor=null;
-    private Logger logger=null;
+    private static Logger logger=Logger.getLogger(AnalyticsServer.class.getSimpleName()
+                    +"."+MessageDistributor.class.getSimpleName());
     public MessageDistributor(LinkedBlockingQueue<Event> incomingchannel)
     {   
-        logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+MessageDistributor.class.getSimpleName());
+
         this.incomingchannel=incomingchannel;
         outcomingdistributor=new ConcurrentHashMap<Long,LinkedBlockingQueue<Event>>();
     }
     
     public void run()
     {
-        logger.entry();
+      
         Event event=null;
         while(!Thread.currentThread().isInterrupted())
         {
@@ -57,21 +58,19 @@ public class MessageDistributor implements Runnable{
                                            
               
             } catch (InterruptedException ex) {
-              logger.catching(ex);
+              logger.error("InterruptedException:"+ex.getMessage());
               Thread.currentThread().interrupt();
             }catch (Exception ex) {
-              logger.catching(ex);
+              logger.error("Exception:"+ex.getMessage());
               Thread.currentThread().interrupt();
             }             
         
         }
      this.close();
-     logger.exit();
     }
    
     public  Long registerOutcomingMember(long channelID,LinkedBlockingQueue<Event> lbq)throws MessageDistributorException
     {
-        logger.entry();
         //ClientID=FILTERID=ChannelID
         Long id=new Long(channelID);
         this.outcomingdistributor.put(id, lbq);
@@ -82,7 +81,6 @@ public class MessageDistributor implements Runnable{
             throw new MessageDistributorException("Hashmap registration unsuccesfull.");
         }
         logger.trace("Added new queue to outcomingdistributor.");
-        logger.exit();
         return id;
         
         
@@ -90,7 +88,6 @@ public class MessageDistributor implements Runnable{
     
     public  void deregisterOutcomingMember(Long id)
     {
-        logger.entry();
         if(outcomingdistributor.containsKey(id))
         {
             LinkedBlockingQueue<Event> out=this.outcomingdistributor.remove(id);
@@ -99,15 +96,12 @@ public class MessageDistributor implements Runnable{
             logger.debug("Removed queue from outcomingdistributor "
                     +"and send close message to Handler.");
         }
-        logger.exit();
     }
     
    
     
     private Long getID()
     {
-        logger.entry();
-        logger.exit();
         return new Long(counter++);
     }
     

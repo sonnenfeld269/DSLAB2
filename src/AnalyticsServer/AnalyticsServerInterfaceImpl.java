@@ -10,8 +10,8 @@ import RMI.ManagementClientCallBackInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -24,7 +24,8 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
     private LinkedBlockingQueue<Task.RESULT> FromAmsChannel=null;
     LinkedBlockingQueue<Event> distributorchannel=null;
     LinkedBlockingQueue<Event> statisticincomechannel=null;
-    private Logger logger=null;
+    private static Logger logger=Logger.getLogger(AnalyticsServer.class.getSimpleName()
+                    +"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
     
     public AnalyticsServerInterfaceImpl() throws RemoteException {
         super();
@@ -36,7 +37,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
             LinkedBlockingQueue<Event> statisticincomechannel)
     {
        
-        logger=LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+AnalyticsServerInterfaceImpl.class.getSimpleName());
+
         this.ToAmsChannel=ToAmsChannel;
         this.FromAmsChannel=FromAmsChannel;
         this.distributorchannel=distributorchannel;
@@ -66,7 +67,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
             logger.info("Get result status "+b+" from AnalyticManagementSystem"
                     +"for subscription ID "+id);
         } catch (InterruptedException ex) {
-            logger.catching(ex);
+            logger.error("InterruptedException:"+ex.getMessage());
         }
         if(!b)
             throw new RemoteException("Subscription of ID "+id+"with Filter "
@@ -90,7 +91,7 @@ public class AnalyticsServerInterfaceImpl  extends UnicastRemoteObject implement
                     +"to unsubscribe subscriptionID "+subsciptionID);
         }catch(InterruptedException ex)
         {
-             logger.catching(ex);
+             logger.error("InterruptedException:"+ex.getMessage());
         }
         
         return b;

@@ -8,8 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 import java.util.concurrent.Executor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 
 /**
  *
@@ -17,7 +18,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class BillingsServer implements Runnable {
 
-    private Logger logger = null;
+    private static Logger logger = Logger.getLogger(BillingsServer.class.getSimpleName());
     private RMIRegistry registry = null;
     //private BillingServerInterface bsi = null;
     //private Executor pool = null;
@@ -29,7 +30,10 @@ public class BillingsServer implements Runnable {
     
     public BillingsServer(String propertyFile, String billingBindingName) {
         try {
-            logger = LogManager.getLogger(BillingsServer.class);
+           
+             DOMConfigurator.configure("./src/log4j.xml"); 
+            
+            
             registry = new RMIRegistry(propertyFile);
             if (registry.getRegistry() == null) {
                 registry.startRegistry();
@@ -44,9 +48,9 @@ public class BillingsServer implements Runnable {
             logger.info("BillingServerInterface was successfully registered to the Registry");
             
         } catch (RemoteException ex) { // java 7 wird bei der abgabe nicht unterstützt
-            logger.catching(ex);
+            logger.error("RemoteException:"+ex.getMessage());
         } catch (RMIRegistryException ex) {
-            logger.catching(ex);
+            logger.error("RMIRegistryException:"+ex.getMessage());
         }
     }
     
@@ -61,8 +65,9 @@ public class BillingsServer implements Runnable {
                     break;
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.fatal("Billing Server Main is not running.");
             }
         }
+        logger.info("BillingServer closed...");
     }
 }

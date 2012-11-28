@@ -39,11 +39,11 @@ public class PartBClient {
     {
 //        if(arguments.length != 3)
 //               return false;
-        host = this.arguments[0];
+            host = this.arguments[0];
    //     try{
             tcpPort=Integer.parseInt(this.arguments[1]);
             udpPort=Integer.parseInt(this.arguments[2]);
-            System.out.println("HOST " + host + "PORTS: " + tcpPort + " : " +udpPort);
+            
             return true;
 //        }catch(NumberFormatException e)
 //        {

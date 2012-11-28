@@ -18,8 +18,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+
 
 /**
  * This is just a temporary test Server class. For lookup of processEvents. Just
@@ -32,7 +34,7 @@ public class AnalyticsServer {
 
     //private static final int standardPORT = 1099;
     
-    private Logger logger=null;
+    private static Logger logger=Logger.getLogger(AnalyticsServer.class.getSimpleName());
     private RMIRegistry registry=null;
     private AnalyticsServerInterface asi=null;
     private ExecutorService pool=null;
@@ -46,8 +48,9 @@ public class AnalyticsServer {
     public AnalyticsServer (String propertyFile, String analyticBindingName)
     {
         try {
-           // logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
-            logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName());
+          
+            DOMConfigurator.configure("./src/log4j.xml"); 
+            
             /**
              * Get or start Registry(Naming Server)
              **/
@@ -80,10 +83,10 @@ public class AnalyticsServer {
             registry.registerObject(analyticBindingName,ASII);
             
         }catch ( RemoteException ex) {
-            logger.catching(ex);
+           logger.error("RemoteException:"+ex.getMessage());
         }catch(RMIRegistryException ex)
         {
-            logger.catching(ex);
+           logger.error("RMIRegistryException:"+ex.getMessage());
         }
         
     }
@@ -138,7 +141,7 @@ public class AnalyticsServer {
         try {
             this.registry.deregisterObject(AnalyticsServerInterface.class.getSimpleName());
         } catch (RMIRegistryException ex) {
-           this.logger.error("Unbind AnalyticServerInterface from Registry not successfull.");
+           logger.error("Unbind AnalyticServerInterface from Registry not successfull.");
         }
         logger.info("AnalyticServer has closed all ressources.");
 

@@ -10,8 +10,8 @@ import RMI.ManagementClientCallBackInterface;
 import java.rmi.RemoteException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -24,7 +24,8 @@ public class MClientHandler implements Runnable{
     private ManagementClientCallBackInterface mccbi=null;
     private LinkedBlockingQueue<Event> lbq=null;
     private LinkedBlockingQueue<Task> toamsincomechannel=null;
-    private Logger logger=null;
+    private Logger logger=Logger.getLogger(AnalyticsServer.class.getSimpleName()
+                    +"."+MClientHandler.class.getSimpleName());
     
     public MClientHandler(long ClientID,
             Filter filter,
@@ -37,12 +38,12 @@ public class MClientHandler implements Runnable{
         this.mccbi=mccbi;
         this.lbq=lbq;
         this.toamsincomechannel=toamsincomechannel;
-        logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+MClientHandler.class.getSimpleName());
+
     }
     
     public void run()
     {
-        logger.entry();
+        
         Event event=null;
         logger.debug("A new ManagementClient handler is running with ClientID:"
                 +ClientID
@@ -99,8 +100,7 @@ public class MClientHandler implements Runnable{
         
         }
      this.close();
-     logger.exit();
-
+    
     }
     
     

@@ -3,8 +3,8 @@ package BillingServer;
 import RMI.BillingServerSecure;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -12,7 +12,8 @@ import org.apache.logging.log4j.Logger;
  */
 public class BillingServerSecureImpl extends UnicastRemoteObject implements BillingServerSecure {
 
-    Logger logger = LogManager.getLogger(BillingsServer.class.getSimpleName() + "." + BillingServerSecureImpl.class.getSimpleName());
+    private static Logger logger=Logger.getLogger(BillingsServer.class.getSimpleName()
+                + "." + BillingServerSecureImpl.class.getSimpleName());
     private PriceSteps ips = new PriceSteps();
     private Bill bill = new Bill();
 

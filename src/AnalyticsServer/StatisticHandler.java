@@ -16,8 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -28,7 +28,8 @@ public class StatisticHandler implements Runnable{
     
     private LinkedBlockingQueue<Event> inputchannel=null;
     private LinkedBlockingQueue<Event> outputchannel=null;
-    private Logger logger=null;
+    private Logger logger=Logger.getLogger(AnalyticsServer.class.getSimpleName()
+                +"."+StatisticHandler.class.getSimpleName());
     private Timer timer = null;
     
     /*Statistic tracking values**/
@@ -53,14 +54,14 @@ public class StatisticHandler implements Runnable{
        this.inputchannel=inputchannel;
        this.outputchannel=outputchannel;
        this.timer = new Timer(true);
-       logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+StatisticHandler.class.getSimpleName());
+       
     }
        
     
     public void run()
     {
         
-       logger.entry();
+   
        logger.info("Start timer with a periode of 60 seconds.");
        timer.scheduleAtFixedRate(new StatisticHandler.Task(lock),0, periode);
        
@@ -174,16 +175,16 @@ public class StatisticHandler implements Runnable{
                                            
               
             } catch (InterruptedException ex) {
-              logger.catching(ex);
+              logger.error("InterruptedException:"+ex.getMessage());
               Thread.currentThread().interrupt();
             }catch (Exception ex) {
-              logger.catching(ex);
+              logger.error("Exception:"+ex.getMessage());
               Thread.currentThread().interrupt();
             }             
         
         }
      
-     logger.exit(); 
+     
         
         
     }
@@ -192,12 +193,13 @@ public class StatisticHandler implements Runnable{
      public class Task extends TimerTask {
 
         private Lock lock; 
-         
+         private  Logger logger=null;
         public Task(Lock lock) {
             this.lock=lock;
-            logger = LogManager.getLogger(AnalyticsServer.class.getSimpleName()
+            logger=Logger.getLogger(AnalyticsServer.class.getSimpleName()
                     +"."+StatisticHandler.class.getSimpleName()
                     +"."+Task.class.getSimpleName());
+           
            
             
         }

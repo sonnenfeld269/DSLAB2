@@ -8,8 +8,9 @@ import RMI.RMIRegistryException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.rmi.RemoteException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 
 /**
  *
@@ -18,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 public class ManagementClient implements Runnable {
 
    
-    private Logger logger = null;
+    private static Logger logger = Logger.getLogger(ManagementClient.class.getSimpleName());
     private RMIRegistry registry = null;
     private ManagementClientCallBackInterfaceImpl mccbi = null;
     private AnalyticsServerInterface analytic = null;
@@ -30,7 +31,8 @@ public class ManagementClient implements Runnable {
 
     public ManagementClient(String propertyFile, String analyticBindingName,String billingBindingName) {
         try {
-            logger = LogManager.getLogger(ManagementClient.class.getSimpleName());
+             DOMConfigurator.configure("./src/log4j.xml"); 
+           
             /**
              * Get or start Registry(Naming Server)
              *
@@ -95,7 +97,7 @@ public class ManagementClient implements Runnable {
                         
                         
                         if (line.contains("!subscribe") && this.analyticIsAvaible) {
-                            logger.entry();
+                            
                             String[] s = line.split(" ");
                             if (s.length >= 2) {
                                 long sub_id = 0;
@@ -123,9 +125,9 @@ public class ManagementClient implements Runnable {
                                             + ex.getMessage());
                                 }
                             }
-                            logger.exit();
+                            
                         }else if (line.contains("!unsubscribe") && this.analyticIsAvaible) {
-                            logger.entry();
+                          
 
                             try {
                                 boolean b;
@@ -158,7 +160,7 @@ public class ManagementClient implements Runnable {
                                         + "run:unsubscribe:"+e.getMessage());
                                 //System.out.print("ERROR:" + e.getMessage());
                             }
-                          logger.exit();
+                        
 
                         } else if (line.contains("!print") && this.analyticIsAvaible) {
                             if (!mccbi.getMode()) {
@@ -208,16 +210,16 @@ public class ManagementClient implements Runnable {
                                 System.out.println("Price step with values " + min_price + "," + max_price + " was deleted successfully.");
                             } catch (Exception e) {
                                 logger.error("Price step could not be deleted!");
-                                e.printStackTrace();
+                                
                             }
                         } else if (line.contains("!bill") && this.billingIsAvaible) {
                             try {
-                                logger.entry();
+                               
                                 String[] split = line.split(" ");
                                 String user = split[1];
                                 String report = bss.getBill(user).toString();
                                 System.out.println("Bill of User " + user + " is as follows: \n" + report);
-                                logger.exit();
+                                
                             } catch (NullPointerException e) {
                                 logger.info("You must login first.");
                             } catch (Exception e){
@@ -229,8 +231,8 @@ public class ManagementClient implements Runnable {
                             logger.info("USER was sucessfully logged out!");
                         }
                     } catch (Exception ex) {
-                     logger.error("There was an error. Check if you are logged in.");
-                     logger.catching(ex);
+                     System.out.println("ErrorThere was an error. Check if you are logged in.");
+                     logger.error("Exception:"+ex.getMessage());
                     }
                 }// while ((line = in.readLine()) != null) 
 

@@ -25,11 +25,7 @@
     <path id="project.classpath">
     <pathelement location="${build.dir}"/>
     <fileset dir="lib">
-         <include name="log4j-core-2.0-beta2.jar"/>
-        <include name="log4j-api-2.0-beta2.jar"/>
-        <include name="log4j12-api-2.0-beta2.jar"/>
-         <include name="log4j-flume-ng-2.0-beta2.jar"/>
-          <include name="log4j-jcl-2.0-beta2.jar"/>
+         <include name="log4j-1.2.16.jar"/>
     </fileset>
 </path>
     

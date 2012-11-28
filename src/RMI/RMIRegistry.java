@@ -10,8 +10,10 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+
 import utils.EasyProperties;
 
 /**
@@ -21,7 +23,7 @@ import utils.EasyProperties;
 public class RMIRegistry {
     
     
-     private Logger logger = null;
+     private static Logger logger = Logger.getLogger(RMIRegistry.class.getSimpleName());
      private Registry registry=null;
      private String properties=null;
      private String registryHost=null;
@@ -29,7 +31,8 @@ public class RMIRegistry {
     
     public RMIRegistry(String propertyFile)
     {
-        logger = LogManager.getLogger(RMIRegistry.class.getSimpleName());
+         DOMConfigurator.configure("./src/log4j.xml"); 
+        
         String[] str=null;
         this.properties = propertyFile;
         this.registryHost = EasyProperties.getProperty(propertyFile,"registry.host");
@@ -37,7 +40,7 @@ public class RMIRegistry {
         try {
             this.registry = LocateRegistry.getRegistry(this.registryHost,this.registryPort);
             str=this.registry.list();
-            logger.info("Array of the names bound in this registry:length:",str.length);
+            logger.info("Array of the names bound in this registry:length:"+str.length);
             //this.registry.
         } catch (RemoteException ex) {
             logger.debug("RMIRegistry:constructor:RemoteException:"+ex.getMessage());
@@ -52,7 +55,7 @@ public class RMIRegistry {
     }
     
     public Registry startRegistry() throws RMIRegistryException {
-        logger.entry();
+       
         
         
         try{
@@ -62,19 +65,19 @@ public class RMIRegistry {
             
         }catch(RemoteException ex)
         {
-             logger.catching(ex);
+             logger.error("RemoteException:"+ex.getMessage());
              throw new RMIRegistryException("RemoteException:",ex);
          
         }catch(IOException ex)
         {
-            logger.catching(ex);
+             logger.error("IOException:"+ex.getMessage());
             throw new RMIRegistryException("IOException:",ex);
         }catch(Exception ex)
         {
-            logger.catching(ex);
+             logger.error("Exception:"+ex.getMessage());
              throw new RMIRegistryException("Exception:",ex);
         }
-        logger.exit();
+      
         return registry;
     }
     
@@ -95,7 +98,7 @@ public class RMIRegistry {
             logger.debug(msg);
         }catch(RemoteException ex)
         {
-            logger.catching(ex);
+             logger.error("RemoteException:"+ex.getMessage());
             throw new RMIRegistryException("RemoteException:",ex);
         }
         
@@ -109,11 +112,11 @@ public class RMIRegistry {
             registry.unbind(name);
         }catch(NotBoundException ex)
         {
-           logger.catching(ex);
+            logger.error("NotBoundException:"+ex.getMessage());
            throw new RMIRegistryException("NotBoundException:",ex);
         }catch(RemoteException ex)
         {
-             logger.catching(ex);
+              logger.error("RemoteException:"+ex.getMessage());
              throw new RMIRegistryException("RemoteException:",ex);
             
         }

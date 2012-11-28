@@ -4,6 +4,9 @@
  */
 package AnalyticsServer;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
+
 import Event.AnalyticsControllEvent;
 import Event.Event;
 import RMI.ManagementClientCallBackInterface;
@@ -15,8 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import java.util.concurrent.LinkedBlockingQueue;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+
+
+
 
 /**
  *
@@ -25,7 +30,8 @@ import org.apache.logging.log4j.Logger;
 public class AnalyticsManagementSystem implements Runnable {
     
     private ExecutorService pool=null;
-    private Logger logger=null;
+     private static Logger logger=Logger.getLogger(AnalyticsServer.class.getSimpleName()+
+                "."+AnalyticsManagementSystem.class.getSimpleName());
     /*maps*/
     private ConcurrentHashMap<Long,Filter> mclient_map=null;
     private ConcurrentHashMap<Long,Filter> subscription_map=null;
@@ -44,9 +50,10 @@ public class AnalyticsManagementSystem implements Runnable {
             LinkedBlockingQueue<Event> distributorincomechannel,
             LinkedBlockingQueue<Event> statisticsincomechannel)
     {
-        this.logger=LogManager.getLogger(AnalyticsServer.class.getSimpleName()+
-                "."+AnalyticsManagementSystem.class.getSimpleName());
+        
        
+        
+        
         this.pool=pool;
         //ManagementClient ID and filter
         this.mclient_map=new ConcurrentHashMap<Long,Filter>();
@@ -63,7 +70,6 @@ public class AnalyticsManagementSystem implements Runnable {
     
     public void run()
     {
-         logger.entry();
         //start Distributor
         pool.execute(MD);
         logger.debug("Message Distributor started.");
@@ -266,10 +272,10 @@ public class AnalyticsManagementSystem implements Runnable {
                 //this.amstormisoutcomechannel.offer(result);
             } catch (InterruptedException ex) {
                Thread.currentThread().interrupt();
-              logger.catching(ex);
+              logger.error("InterruptedException:"+ex.getMessage());
               Thread.currentThread().interrupt();
             } catch (Exception ex) {
-              logger.catching(ex);
+             logger.error("Exception:"+ex.getMessage());
               Thread.currentThread().interrupt();
             }  
            
@@ -277,7 +283,7 @@ public class AnalyticsManagementSystem implements Runnable {
         }
         this.close();
         logger.debug("AnalyticsManagemenSystem Handler closed...");
-        logger.exit();
+       
     }
     
      public void close()

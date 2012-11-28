@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -19,13 +19,14 @@ import org.apache.logging.log4j.Logger;
 public class Filter {
     private static long counter=0;
     private long filterID;
-    private Logger logger=null;
+    private static Logger logger=Logger.getLogger(AnalyticsServer.class.getSimpleName()
+                    +"."+Filter.class.getSimpleName());
     private ConcurrentHashMap<Long,Pattern> RegexFilterMap=null;
    
     
     public Filter()
     {
-        this.logger=LogManager.getLogger(AnalyticsServer.class.getSimpleName()+"."+Filter.class.getSimpleName());
+      
         filterID=getnewID();
         RegexFilterMap= new ConcurrentHashMap<Long,Pattern>();
     
