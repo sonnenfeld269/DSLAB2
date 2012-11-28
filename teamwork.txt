@@ -1,0 +1,38 @@
+<default package>		:Marko Stanisic
+				:David Ifraimov
+
+AnalyticServer package		:Marko Stanisic
+
+Auction package			:Marko Stanisic
+Auction package 		:David Ifraimov
+	-) billing server lookup
+		(AuctionManagemensyste.java)
+	-) billAuction() Remoteaufruf im AuctionServer
+		(AuctionManagemensyste.java)
+Event		package		:Marko Stanisic
+
+ManagementClients package	:Marko Stanisic
+	-)ManagementClient.java 
+		!subscribe,!unsubscribe,!auto,!print,!hide
+ManagementClients package:David Ifraimov
+	-)ManagementClient.java 
+		!login,!steps,!addStep,!removeStep,!bill,!logout
+
+ManagementClients package:Marko Stanisic
+	-)ManagementClientCallbackInterfaceImpl.java
+
+MyLogger package	:Marko Stanisic
+
+RMI 	package		:Marko Stanisic
+			:David Ifraimov
+
+communication		:Marko Stanisic
+
+utils			package	:Marko Stanisic
+
+
+
+
+
+
+

@@ -153,8 +153,8 @@ public class StatisticHandler implements Runnable{
                    AuctionEvent auctionevent = (AuctionEvent)event;
                    count_Auctions++;
                    sum_AllAuctionTime+=auctionevent.getAuctionTime();
-                   long auction_time_avg=sum_AllAuctionTime/count_Auctions;//for AUCTION_TIME_AVG
-                   long auction_success_ratio=count_Bid_Won/count_Auctions;//for AUCTION_SUCCESS_RATIO
+                   double auction_time_avg=sum_AllAuctionTime/count_Auctions;//for AUCTION_TIME_AVG
+                   double auction_success_ratio=count_Bid_Won/count_Auctions;//for AUCTION_SUCCESS_RATIO
                    
                    
                    StatisticsEvent sevent1= new StatisticsEvent(auction_time_avg,

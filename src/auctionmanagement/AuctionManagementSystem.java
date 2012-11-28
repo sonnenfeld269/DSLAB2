@@ -654,7 +654,7 @@ public class AuctionManagementSystem implements Runnable {
                     } else {
                         logger.output("AMSHandlerThread:Bid:unsuccesful", 3);
                         String ans = new String("You unsuccesfully bid with"
-                                + " " + auc.getHighestBid() + " "
+                                + " " + commandtask.bid.amount + " "
                                 + "on" + " '" + auc.getDescription() + "'."
                                 + " Current highest bid is" + " "
                                 + auc.getHighestBid());
