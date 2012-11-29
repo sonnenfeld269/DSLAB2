@@ -181,15 +181,14 @@ public class ManagementClient implements Runnable {
                          * Billing Eingaben****
                          */
                         else if (line.contains("!login") && this.billingIsAvaible) {
-                            logger.info("INSIDE MANAGEMENT CLIENT - LOGIN METHOD");
                             String[] split = line.split(" ");
                             String login = split[1];
                             String pass = split[2];
                             if (billing.login(login, pass) != null) {
                                 bss = billing.login(login, pass);
-                                logger.info("USER " + login + " was sucessfully logged in!");
+                                System.out.println("USER " + login + " was sucessfully logged in!");
                             } else {
-                                logger.info("USER " + login + " not logged in! Wrong username or password.");
+                                System.out.println("USER " + login + " not logged in! Wrong username or password.");
                             }
                         } else if (line.contains("!steps") && this.billingIsAvaible) {
                             System.out.println(bss.getPriceSteps().toString());
@@ -209,8 +208,7 @@ public class ManagementClient implements Runnable {
                                 bss.deletePriceStep(min_price, max_price);
                                 System.out.println("Price step with values " + min_price + "," + max_price + " was deleted successfully.");
                             } catch (Exception e) {
-                                logger.error("Price step could not be deleted!");
-                                
+                                System.out.println("Price step could not be deleted!");
                             }
                         } else if (line.contains("!bill") && this.billingIsAvaible) {
                             try {
@@ -221,14 +219,14 @@ public class ManagementClient implements Runnable {
                                 System.out.println("Bill of User " + user + " is as follows: \n" + report);
                                 
                             } catch (NullPointerException e) {
-                                logger.info("You must login first.");
+                                System.out.println("You must login first.");
                             } catch (Exception e){
-                                logger.error("A bill could not be created." + e.getMessage());
+                                System.out.println("A bill could not be created. Maybe there are not price configurations defined." + e.getMessage());
                             }
                         } else if (line.contains("!logout") && this.billingIsAvaible) {
                             logger.debug("INSIDE MANAGEMENT CLIENT - LOGOUT METHOD");
                             bss = null;
-                            logger.info("USER was sucessfully logged out!");
+                            System.out.println("USER was sucessfully logged out!");
                         }
                     } catch (Exception ex) {
                      System.out.println("ErrorThere was an error. Check if you are logged in.");
