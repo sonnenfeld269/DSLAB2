@@ -1,7 +1,12 @@
 
+import MyLogger.Log;
 import auctionmanagement.AuctionClientException;
 import auctionmanagement.AuctionTest;
+import java.io.PrintWriter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import utils.EasyProperties;
+import utils.UtilsException;
 
 /**
  *
@@ -9,33 +14,55 @@ import utils.EasyProperties;
  */
 public class LoadTest {
 
-    static int clients = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "clients"));
-    static int auctionsPerMin = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "auctionsPerMin"));
-    static int auctionDuration = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "auctionDuration"));
-    static int updateIntervalSec = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "updateIntervalSec"));
-    static int bidsPerMin = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "bidsPerMin"));
-
-    public static String getString() {
-        return "LoadTest{" + "clients=" + clients + ", auctionsPerMin=" + auctionsPerMin + ", auctionDuration=" + auctionDuration + ", updateIntervalSec=" + updateIntervalSec + ", bidsPerMin=" + bidsPerMin + '}';
-    }
+    
+    
+    ExecutorService pool=null;
+    
 
     public static void main(String[] args) throws AuctionClientException {
-        System.out.println(getString());
-
-        /*
-         * 1. Clients instanzieren
-         */
-
-        
-        for (int i = 0; i < clients; i++) {
-            String host = args[0];
-            int port = Integer.parseInt(args[1]);
-            String bindingName = args[2];
-            AuctionTest at = new AuctionTest(host,port,bindingName,auctionsPerMin,auctionDuration,updateIntervalSec,bidsPerMin);
+        try{
             
-            //ManagementTest at = new ManagementTest(args[0],args[1],args[2]);
+            int clients = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "clients"));
+            int auctionsPerMin = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "auctionsPerMin"));
+            int auctionDuration = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "auctionDuration"));
+            int updateIntervalSec = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "updateIntervalSec"));
+            int bidsPerMin = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "bidsPerMin"));
+            
+            AuctionTest Test=null;
+            
+            Log logger=new Log(new PrintWriter(System.out),3); 
             
             
+            if(args.length==3)
+            {
+                String host = args[0];
+                int port = Integer.parseInt(args[1]);
+                String bindingName = args[2];
+                
+                Test=new AuctionTest(host,port,bindingName,
+                        clients,
+                        auctionsPerMin,
+                        auctionDuration,
+                        updateIntervalSec,
+                        bidsPerMin,
+                        logger);
+                
+                
+                Test.run();
+                
+            }
+            
+           
+        }catch(NumberFormatException ex)
+        {
+            System.out.println("LoadTest:NumberFormatException:port number not correct.");
+        }catch(UtilsException ex)
+        {
+            System.out.println("LoadTest:UtilsException:"+ex.getMessage());
+        }catch(Exception ex)
+        {
+            System.out.println("LoadTest:Exception:"+ex.getMessage());
         }
+        System.exit(0);
     }
 }

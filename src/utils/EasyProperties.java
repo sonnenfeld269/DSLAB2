@@ -38,7 +38,8 @@ public class EasyProperties {
         return success;
     }
 
-    public static String getProperty(String file_, String key) {
+    public static String getProperty(String file_, String key) throws UtilsException 
+    { 
         String s = null;
         Reader reader = null;
         try {
@@ -53,17 +54,20 @@ public class EasyProperties {
             }
 
         } catch (FileNotFoundException ex) {
+            throw new UtilsException("FileNotFoundException:"+ex.getMessage()); 
         } catch (IOException ex) {
+            throw new UtilsException("IOException:"+ex.getMessage()); 
         } finally {
             try {
                 reader.close();
-            } catch (Exception e) {
+            } catch (Exception ex) {
+                throw new UtilsException("Exception:"+ex.getMessage()); 
             }
         }
         return s;
     }
 
-    public static boolean login(String file_, String user, String pass) {
+    public static boolean login(String file_, String user, String pass) throws UtilsException{
         boolean success = false;
         Writer writer = null;
         Reader reader = null;
@@ -101,11 +105,13 @@ public class EasyProperties {
             }
 
         } catch (Exception ex) {
+            throw new UtilsException("Exception:"+ex.getMessage()); 
         } finally {
             try {
                 writer.close();
                 reader.close();
-            } catch (Exception e) {
+            } catch (Exception ex) {
+                 throw new UtilsException("Exception:"+ex.getMessage()); 
             }
         }
         return success;

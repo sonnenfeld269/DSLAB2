@@ -4,213 +4,185 @@
  */
 package auctionmanagement;
 
-import communication.OperationException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import communication.Client;
-import communication.ClientException;
-import communication.Operation;
-import communication.ServerUDP;
-import communication.ServerUDPException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
+import ManagementClients.ManagementClientForLoadTest;
 import MyLogger.Log;
-import auctionmanagement.CheckRequest.checkAuctionAnswer;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 
+
+
+/*
+ * 
+ * static int clients = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "clients"));
+    static int auctionsPerMin = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "auctionsPerMin"));
+    static int auctionDuration = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "auctionDuration"));
+    static int updateIntervalSec = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "updateIntervalSec"));
+    static int bidsPerMin = Integer.parseInt(EasyProperties.getProperty("./src/loadtest.properties", "bidsPerMin"));
+    
+ * 
+ * 
+ * 
+ */
 
 /**
  *
  * @author sanker
  */
-public class AuctionTest implements Runnable {
-   
-    private final ExecutorService pool;
-    private ServerUDP serverUDP=null;
-    private int udpPort;
-    private AuctionClientUDPHandler handleUDP=null;
-    private AuctionClientTCPHandler handleTCP=null;
-    private Client clientTCP=null;
-    private Log errorlog=null;
+public class AuctionTest 
+{
+    private Log logger=null;
+    private ExecutorService pool;
+    private int clients;
+    private String host=null;
+    private int port;
+    private Properties prop=null;
+    private String AnalyticBindingName=null;
+    private ReentrantLock controlManagementClientLock=null;
     
-    private ClientStatus userstatus=null;
-    
-    
-    
-    public AuctionTest(String host,int tcpPort,String bindingName,int auctionsPerMin,int auctionDuration,int updateIntervalSec,int bidsPerMin) throws AuctionClientException
-    {
-        //this.errorlog=output;
-        userstatus=new ClientStatus("none");
-        try {
-            
-            this.clientTCP=new Client(host,tcpPort);
-          
-            this.handleTCP=new AuctionClientTCPHandler(this.clientTCP,null);
-            //this.serverUDP=new ServerUDP(udpPort,handleUDP,output);
-           // this.serverUDP.setErrorLog(output);
-            pool = Executors.newCachedThreadPool();
-           // pool.execute(serverUDP);
-            pool.execute(handleTCP);
-            
-        } catch (ClientException e) {
-           throw (new AuctionClientException(":ClientException:",e));
-      }  /* catch (ServerUDPException e) {
-           throw (new AuctionClientException(":ServerUDPException:",e));
-        } */
-    }
-    
-    public void run()
+    public AuctionTest(String host,int port,String AnalyticBindingName,
+            int clients,
+            int auctionsPerMin,
+            int auctionDuration,
+            int updateIntervalSec,
+            int bidsPerMin,
+            Log logger)
     {
         
-        
-   
+        pool = Executors.newCachedThreadPool();
+        this.logger=logger;
+        this.clients=clients;
+        this.host=host;
+        this.port=port;
+        this.AnalyticBindingName=AnalyticBindingName;
+        this.prop=new Properties(
+                auctionsPerMin,
+                auctionDuration,
+                updateIntervalSec,
+                bidsPerMin);
         
     }
-    
-    public void close()
+
+    public void run() throws AuctionTestException
     {
-        this.shutdownPool();
-        try {
-            this.clientTCP.closeSocket();
-        } catch (ClientException e) {
-            this.errorlog.output("ActionClientThread:close():"+e.getMessage());
-        }
-        
-    }
+        logger.output("AuctionTest:run:Start AuctionTest",2);
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        AuctionTestClient[] auctionclient=new AuctionTestClient[clients];
+        logger.output("AuctionTest:run:Create Lock for ManagementClient.",3);
+        controlManagementClientLock=new ReentrantLock();
+        controlManagementClientLock.lock();
     
-    private  void shutdownPool()
-    {
-       if(!pool.isShutdown())
-        pool.shutdown(); // Disable new tasks from being submitted
-    try {
-     // Wait a while for existing tasks to terminate
-     if (!pool.awaitTermination(3, TimeUnit.SECONDS)) {
-       pool.shutdownNow(); // Cancel currently executing tasks
-       // Wait a while for tasks to respond to being cancelled      
-     }
-   } catch (InterruptedException ie) {
-     // (Re-)Cancel if current thread also interrupted
-     pool.shutdownNow();
-     // Preserve interrupt status
-     Thread.currentThread().interrupt();
-   } 
+        //start ManagementClient 
+        ManagementClientForLoadTest managementclient=null;
+        managementclient=new ManagementClientForLoadTest("./src/registry.properties",
+                this.AnalyticBindingName,controlManagementClientLock);
         
-    }
-    
-    private class AuctionClientUDPHandler extends ServerUDP.Handler {
-        
-        private Log out=null;
        
         
-        public AuctionClientUDPHandler(Log out)
-        {
-                this.out=out;
-                this.out.output("Constructor:Create AuctionClientUDPHandler", 2);
-                
-        }
-        
-        public String checkIncomingMessage(String msg)
-        {
-            String newMessage=null;
-            newMessage=CheckRequest.checkAuctionAnswer.checkandget(msg,
-                    userstatus.getUser());
-            if(newMessage==null)
-                return msg;
-            else 
-                return newMessage;
-           // userstatus
-        }
-        
-        public void handle(String msg)
-        {
-            out.output("AuctionClientUDPHandlerThread running..", 2);
-            String checkedmessage=this.checkIncomingMessage(msg);
-            out.output(checkedmessage);
-            out.output("AuctionClientUDPHandlerThread finished..", 2);
-        }
-    }
-    
-    private class AuctionClientTCPHandler implements Runnable {
-        
-        private Log out=null;
-        private Client client=null;
-        
-        public AuctionClientTCPHandler(Client client,Log out)
-        {
-                this.out=out;
-                this.client=client;
-                out.output("Constructor:Create AuctionClientTCPHandler", 2);
-        }
-        
-        
-
-        public void run()
-        {
-            String msg=null;
+        int i=0;
+        //initialize and start all clients
+        try{
+            if(!managementclient.getInitStatus())
+                throw new Exception("ManagementClient for Load Test not ready.");
+            logger.output("AuctionTest:run:Start ManagementClient.",2);
+            managementclient.run();
             
-            Operation op=null;
-            
-            while(!Thread.currentThread().isInterrupted())
+            for (i = 0; i < clients; i++) 
             {
-                out.output("AuctionClientTCPHandlerThread is running..", 2);
-                try {
-                    
-                    op  = new Operation(this.client);
-                    msg = op.readString();
-                    out.output(msg);
-                    
-                } catch (OperationException ex) {
-                   out.output("AuctionClientTCPHandlerThread: OperationException");
-                   Thread.currentThread().interrupt();
-                  
-                }
-            }
-            out.output("AuctionClientTCPHandlerThread finished..", 2);
+                 logger.output("AuctionTest:run:Create AuctionTestClient "+i+".",2);
+                 auctionclient[i]= new AuctionTestClient(i,host,
+                        port,
+                        AnalyticBindingName,
+                        prop,                   
+                        pool,
+                        logger);
+
+                
+             }
+            logger.output("AuctionTest:run:Wait for Input.",3);
+            //wait for input to exit program
+            String line=in.readLine();
             
+        }catch(AuctionTestClientException ex)
+        {
+            throw new AuctionTestException("AuctionTestClientException:"+ex);
+        }catch(IOException ex)
+        {
+            throw new AuctionTestException("IOException:"+ex);
+        }catch(Exception ex)
+        {
+            throw new AuctionTestException("Exception:"+ex);
+        }finally
+        {
+            logger.output("AuctionTest:run:finally:Free ressources.",2);
+            this.controlManagementClientLock.unlock();
+            if(i>0)
+            {
+                for (int j = 0; j < i; j++) 
+                {
+                    if(auctionclient[j]!=null)
+                    {
+                        logger.output("AuctionTest:run:finally:"
+                                +"Close auctionclient "+j+".",3);
+                        auctionclient[j].close();
+                    }
+                }
+                    
+            }
+            this.shutdownPool();
         } 
-    }
+         logger.output("AuctionTest:run:Exit AuctionTest",2);
+    }//run
     
-    private class ClientStatus{
-        private String user=null;
-        private String reset=null;
-        
-        public ClientStatus(String name)
+     private  void shutdownPool()
+    {
+       
+        if(!pool.isShutdown())
         {
-            this.reset=name;
-            this.user=name;
-        }
-        
-        public String getUser()
-        {
-            return this.user;
-        }
-        
-        public void setUser(String user)
-        {
-             this.user=user;
-        }
-        
-        public void resetUser()
-        {
-            this.user=this.reset;
-        }
-        
-        public boolean sameUser(String user1,String user2)
-        {
-            return user1.contains(user2);
-        }
-        
-        public boolean noUser()
-        {
-            return this.user.contains(this.reset);
-        }
+            pool.shutdown(); // Disable new tasks from being submitted
+
+            try {
+                // Wait a while for existing tasks to terminate
+
+                if (!pool.awaitTermination(3, TimeUnit.SECONDS)) {
+                pool.shutdownNow(); // Cancel currently executing tasks
+                // Wait a while for tasks to respond to being cancelled      
+                }
+            }catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            pool.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+            }
+        } 
         
     
     }
     
     
-     
-}
+    
+    public class Properties
+    {
+        int auctionsPerMin; 
+        int auctionDuration; 
+        int updateIntervalSec;
+        int bidsPerMin; 
+    
+        
+          
+        public Properties(int auctionsPerMin,int auctionDuration
+                ,int updateIntervalSec,int bidsPerMin)
+        {
+          this.auctionDuration=auctionDuration;
+          this.auctionsPerMin=auctionsPerMin;
+          this.bidsPerMin=bidsPerMin;
+          this.updateIntervalSec=updateIntervalSec;
+        }
+    }
+    
+ }
