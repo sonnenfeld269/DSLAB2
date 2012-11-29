@@ -64,7 +64,7 @@ public class StatisticsEvent extends  Event {
              msg="average auction time is "+(this.value/1000)+" sec."; 
         }else  if(super.getType().contains("AUCTION_SUCCESS_RATIO"))
         {
-            msg="average succes ratio over all last auctions is "+(this.value/1000); 
+            msg="auction succes ratio over all last auctions is "+(this.value); 
         }else  if(super.getType().contains("BID_COUNT_PER_MINUTE"))
         {
             msg="number of bid per minute is "+(this.value); 

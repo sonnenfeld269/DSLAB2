@@ -459,7 +459,7 @@ public class AuctionManagementSystem implements Runnable {
                                     userevent.setTime(time);
                                     logger.output("RMI:logout:Login time of "
                                             + ac.getName()
-                                            + " is " + time + " ms.");
+                                            + " is " + time + " ms.",3);
                                     analytic.processEvents(userevent);
                                     logger.output("AMSHandlerThread:logout:RMI"
                                             + ":processEvent:Invoke::"
