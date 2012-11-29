@@ -33,15 +33,15 @@ public class StatisticHandler implements Runnable{
     private Timer timer = null;
     
     /*Statistic tracking values**/
-    private long count_Bid_Won=0;
-    private long count_Auctions=0;
+    private double count_Bid_Won=0;
+    private double count_Auctions=0;
     private double bid_max=0;
-    private long count_Bidding=0;
-    private long user_sessiontime_max=0;
-    private long user_sessiontime_min=0;
+    private double count_Bidding=0;
+    private double user_sessiontime_max=0;
+    private double user_sessiontime_min=0;
     private double user_sessiontime_avg=0;
-    private long sum_user_sessiontime=0;
-    private long count_user_sessions=0;
+    private double sum_user_sessiontime=0;
+    private double count_user_sessions=0;
    /*Statistic time values [ms]**/
     private long sum_AllAuctionTime; //AuctionTime1 + AuctionTime2+..+AuctionTimeN
     
@@ -154,13 +154,14 @@ public class StatisticHandler implements Runnable{
                    count_Auctions++;
                    sum_AllAuctionTime+=auctionevent.getAuctionTime();
                    double auction_time_avg=sum_AllAuctionTime/count_Auctions;//for AUCTION_TIME_AVG
-                   double auction_success_ratio=count_Bid_Won/count_Auctions;//for AUCTION_SUCCESS_RATIO
+                   double success_ratio=count_Bid_Won/count_Auctions;//for AUCTION_SUCCESS_RATIO
+                  
                    
                    
                    StatisticsEvent sevent1= new StatisticsEvent(auction_time_avg,
                            StatisticsEvent.StatisticsEventType.AUCTION_TIME_AVG);
                   
-                   StatisticsEvent sevent2= new StatisticsEvent(auction_success_ratio,
+                   StatisticsEvent sevent2= new StatisticsEvent(success_ratio,
                            StatisticsEvent.StatisticsEventType.AUCTION_SUCCESS_RATIO);
                    
                    this.outputchannel.offer(sevent1);
@@ -170,7 +171,7 @@ public class StatisticHandler implements Runnable{
                     this.outputchannel.offer(sevent2);
                     logger.debug("Send new StatisticalEvent of Typ:"+
                            StatisticsEvent.StatisticsEventType.AUCTION_SUCCESS_RATIO.name()
-                            +" and value:"+auction_success_ratio);
+                            +" and value:"+success_ratio);
                }
                                            
               
@@ -206,7 +207,7 @@ public class StatisticHandler implements Runnable{
         
         public void run() 
         {
-            long temp;
+            double temp;
             try{
                 lock.lock();
                 temp=count_Bidding;

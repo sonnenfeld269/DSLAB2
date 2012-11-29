@@ -16,7 +16,6 @@ package auctionmanagement;
 import auctionmanagement.AuctionServer;
 import auctionmanagement.AuctionServerException;
 import MyLogger.Log;
-import MyLogger.Log;
 import java.io.PrintWriter;
 
 

@@ -44,7 +44,6 @@ public class AuctionServer implements Runnable{
        ams= new AuctionManagementSystem(analytic, billing, queue,pool,output);
        output.output("AuctionServer Port:"+tcpPort+"", 3);
        Server.Handler serversocketHandle=new ServerSocketHandleThread(queue,pool,output);
-       output.output("AuctionManagementSystem started...");
        pool.execute(ams);
         try {
             server=new Server(tcpPort,serversocketHandle,pool,output);

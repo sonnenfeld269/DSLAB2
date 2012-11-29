@@ -49,7 +49,7 @@ public class AnalyticsServer {
     {
         try {
           
-            DOMConfigurator.configure("./src/log4j.xml"); 
+           DOMConfigurator.configure("./src/log4j.xml"); 
             
             /**
              * Get or start Registry(Naming Server)

@@ -194,15 +194,7 @@ public class AuctionManagementSystem implements Runnable {
             try {
                 if (rmiAvailable) {
                     if (rmiAnalyticAvailable) {
-                        AuctionEvent auctionevent = new AuctionEvent(
-                                AuctionEvent.AuctionType.AUCTION_ENDED,
-                                auc.getID());
-                        auctionevent.setTime(auc.getPeriodofTime() * 1000);
-                        analytic.processEvents(auctionevent);
-                        logger.output("TimerTask:RMI"
-                                + ":processEvent:Invoke::"
-                                + "AuctionID:" + auc.getID() + "\n"
-                                + "Type:AUCTION_ENDED", 3);
+                        //BID_WON
                         if (bidder != null) {
                             analytic.processEvents(
                                     new BidEvent(bidder.getName(),
@@ -215,7 +207,18 @@ public class AuctionManagementSystem implements Runnable {
                                     + "\nUser:" + auc.getHighestBidder()
                                     + "\nPrice:" + auc.getHighestBid()
                                     + "\nType:BID_WON", 3);
-                        }
+                        }                      
+                        //AUCTION_ENDED                        
+                        AuctionEvent auctionevent = new AuctionEvent(
+                                AuctionEvent.AuctionType.AUCTION_ENDED,
+                                auc.getID());
+                        auctionevent.setTime(auc.getPeriodofTime() * 1000);
+                        analytic.processEvents(auctionevent);
+                        logger.output("TimerTask:RMI"
+                                + ":processEvent:Invoke::"
+                                + "AuctionID:" + auc.getID() + "\n"
+                                + "Type:AUCTION_ENDED", 3);
+                        
                         //rmiAnalyticsAvaible
                     }
 
