@@ -7,6 +7,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import org.apache.log4j.Logger;
 import utils.EasyProperties;
+import utils.UtilsException;
 
 /**
  *
@@ -30,11 +31,15 @@ public class BillingServerInterfaceImpl extends UnicastRemoteObject implements B
     public BillingServerSecure login(String username, String password) throws RemoteException {
         logger.debug("BillingServerInterface Login Method started!");
         
-
-        if (EasyProperties.login("./src/user.properties", username, password)) {
-            return bss;
-        } else {
-            return null;
+        try{
+            if (EasyProperties.login("./src/user.properties", username, password)) {
+                return bss;
+            } else {
+                return null;
+            }  
+        }catch(UtilsException ex)
+        {
+            throw new RemoteException("UtilsException:"+ex.getMessage());
         }
     }
 

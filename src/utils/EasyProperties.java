@@ -111,7 +111,7 @@ public class EasyProperties {
                 writer.close();
                 reader.close();
             } catch (Exception ex) {
-                 throw new UtilsException("Exception:"+ex.getMessage()); 
+                 //throw new UtilsException("Exception:"+ex.getMessage()); 
             }
         }
         return success;

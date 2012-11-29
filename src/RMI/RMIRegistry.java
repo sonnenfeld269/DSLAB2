@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 
 import utils.EasyProperties;
+import utils.UtilsException;
 
 /**
  *
@@ -35,9 +36,13 @@ public class RMIRegistry {
         
         String[] str=null;
         this.properties = propertyFile;
-        this.registryHost = EasyProperties.getProperty(propertyFile,"registry.host");
-        this.registryPort = Integer.parseInt(EasyProperties.getProperty(propertyFile,"registry.port"));
+     
+        
         try {
+            this.registryHost = EasyProperties.getProperty(propertyFile,"registry.host");
+            this.registryPort = Integer.parseInt(EasyProperties.getProperty(propertyFile,"registry.port"));
+            
+            
             this.registry = LocateRegistry.getRegistry(this.registryHost,this.registryPort);
             str=this.registry.list();
             logger.info("Array of the names bound in this registry:length:"+str.length);
@@ -46,6 +51,10 @@ public class RMIRegistry {
             logger.debug("RMIRegistry:constructor:RemoteException:"+ex.getMessage());
             this.registry=null;
             //java.util.logging.Logger.getLogger(RMIRegistry.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }catch(UtilsException ex)
+        {
+            logger.error("RMIRegistry:constructor:UtilsException:"+ex.getMessage());
+            this.registry=null;
         }catch(Exception ex)
         {
             logger.error("RMIRegistry:constructor:Exception:"+ex.getMessage());
