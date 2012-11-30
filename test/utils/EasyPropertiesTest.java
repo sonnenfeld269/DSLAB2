@@ -7,10 +7,10 @@ package utils;
 import java.io.File;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -66,7 +66,7 @@ public class EasyPropertiesTest {
      * Test of login method, of class EasyProperties.
      */
     @Test
-    public void testCreateLoginandFile() {
+    public void testCreateLoginandFile() throws UtilsException {
         
         System.out.println("testCreateLoginandFile");
         
@@ -80,7 +80,7 @@ public class EasyPropertiesTest {
     }
     
     @Test
-    public void testLoginExist() {
+    public void testLoginExist() throws UtilsException {
         System.out.println("testLoginExist");
         
         String user = "Marko";
@@ -96,7 +96,7 @@ public class EasyPropertiesTest {
     }
     
     @Test
-    public void testcreateAdditionalLogin() {
+    public void testcreateAdditionalLogin() throws UtilsException {
         System.out.println("testcreateAdditionalLogin");
         
         String user_1 = "David";String pass_1 = "Ifraimov";
@@ -138,7 +138,7 @@ public class EasyPropertiesTest {
     }
     
     @Test
-    public void testReadProperty() {
+    public void testReadProperty() throws UtilsException {
         System.out.println("testReadProperty");
         
        String user="Papa";
