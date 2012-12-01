@@ -1,10 +1,7 @@
 package BillingServer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.log4j.Logger;
 
 /**
  *
@@ -23,10 +20,9 @@ public class Bill implements Serializable {
     }
 
     public void createBill(String user, PriceSteps ps) {
-        this.billReport = "";
+        this.billReport = "|StrikePrice|FeeFixed|FeeVariable|FeeTotal|\n";
         if (!this.isUserAvailable(user)) {
             System.out.println("Error:User " + user + " is not available.");
-            this.billReport = "Error:User " + user + " is not available.";
         } else {
             double strike_price;
             User u = users.get(user);
@@ -34,7 +30,9 @@ public class Bill implements Serializable {
                 strike_price = a.getPrice();
                 if (calculateFee(strike_price, ps)) {
                     fee_total = fee_fixed + fee_variable;
-                    billReport = billReport + "StrikePrice: " + strike_price + " FeeFixed: " + fee_fixed + " FeeVariable: " + fee_variable + " FeeTotal: " + fee_total + "\n";
+                    String[] values = {"" + strike_price, "" + fee_fixed, "" + Math.rint(fee_variable*100)/100., "" + Math.rint(fee_total*100)/100.};
+                     String format = "|%1$-11s|%2$-8s|%3$-11s|%4$-8s|\n";
+                    billReport = billReport + String.format(format, (Object[]) values);
                 }
             }
         }
@@ -65,14 +63,11 @@ public class Bill implements Serializable {
     }
 
     private boolean calculateFee(double strike_price, PriceSteps ps) {
-        //PriceSteps ps_ = ps;
-        PriceStep last = null;
         for (PriceStep pS : ps.priceSteps) {
             if ((strike_price >= pS.getMin_value() && strike_price <= pS.getMax_value()) || pS.getMax_value() == 0) {
                 fee_fixed = pS.getFee_fixed();
                 fee_variable = pS.getFee_variable() * strike_price;
                 System.out.println("Fee was set successfully.");
-                last = pS;
                 return true;
             }
         }
@@ -80,6 +75,7 @@ public class Bill implements Serializable {
         return false;
     }
 
+    @Override
     public String toString() {
         return billReport;
     }
