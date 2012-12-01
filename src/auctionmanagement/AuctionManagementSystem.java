@@ -660,7 +660,7 @@ public class AuctionManagementSystem implements Runnable {
                                 + " " + commandtask.bid.amount + " "
                                 + "on" + " '" + auc.getDescription() + "'."
                                 + " Current highest bid is" + " "
-                                + auc.getHighestBid());
+                                + auc.getHighestBid()+ "." );
 
                         Answer a = new Answer(ans, commandtask.bid.client);
                         outgoingmessagechannel.offer(a);

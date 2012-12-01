@@ -71,15 +71,16 @@ public class ManagementClientForLoadTest implements Runnable {
         
       try{
         analytic.subscribe(mccbi,".*");
-        
-        waitforlock.lock();
       
+        waitforlock.lock();
+  
       }catch(RemoteException ex)
       {
           init=false;
       }finally        
       {
           waitforlock.unlock();
+      
       }
       
       System.out.println("ManagementClient for Load test closed.");

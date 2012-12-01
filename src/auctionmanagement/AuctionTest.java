@@ -81,7 +81,7 @@ public class AuctionTest
         ManagementClientForLoadTest managementclient=null;
         managementclient=new ManagementClientForLoadTest("./src/registry.properties",
                 this.AnalyticBindingName,controlManagementClientLock);
-        
+        pool.execute(managementclient);
        
         
         int i=0;
@@ -89,8 +89,8 @@ public class AuctionTest
         try{
             if(!managementclient.getInitStatus())
                 throw new Exception("ManagementClient for Load Test not ready.");
-            logger.output("AuctionTest:run:Start ManagementClient.",2);
-            managementclient.run();
+           
+            //managementclient.run();
             
             for (i = 0; i < clients; i++) 
             {
@@ -101,6 +101,7 @@ public class AuctionTest
                         prop,                   
                         pool,
                         logger);
+                  pool.execute(auctionclient[i]);
 
                 
              }

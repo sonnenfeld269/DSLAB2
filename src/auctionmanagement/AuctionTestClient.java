@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @author sanker
  */
 
-public class AuctionTestClient { 
+public class AuctionTestClient implements Runnable { 
     
     private int id;
     private final ExecutorService pool;
