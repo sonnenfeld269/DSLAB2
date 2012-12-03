@@ -52,7 +52,7 @@ public class AuctionTestClient implements Runnable {
             this.pool=pool;
             this.clientTCP=new Client(host,tcpPort);
             this.messaging=new LinkedBlockingQueue<String>();
-            this.handleTCP=new AuctionTCPHandlerForAuctiontest(this.clientTCP,this.messaging,logger);
+            this.handleTCP=new AuctionTCPHandlerForAuctiontest(this.id,this.clientTCP,this.messaging,logger);
             pool.execute(handleTCP);
             
         } catch (ClientException e) {
@@ -125,14 +125,16 @@ public class AuctionTestClient implements Runnable {
         
         private Log out=null;
         private Client client=null;
+        private int id;
         private LinkedBlockingQueue<String> messaging=null;
         
-        public AuctionTCPHandlerForAuctiontest(Client client,LinkedBlockingQueue<String> messaging,Log out)
+        public AuctionTCPHandlerForAuctiontest(int id,Client client,LinkedBlockingQueue<String> messaging,Log out)
         {
                 this.out=out;
                 this.client=client;
+                this.id=id;
                 this.messaging=messaging;
-                out.output("Constructor:Create AuctionClientTCPHandler", 3);
+                out.output("Constructor:Create AuctionClientTCPHandler "+id, 3);
         }
         
         
@@ -140,25 +142,31 @@ public class AuctionTestClient implements Runnable {
         public void run()
         {
             String msg=null;
-            
             Operation op=null;
+            try{
+                op  = new Operation(this.client);
+            }catch(OperationException ex)
+            {
+                out.output("AuctionClientTCPHandlerThread "+id+": OperationException");
+                Thread.currentThread().interrupt();
+            }
             
             while(!Thread.currentThread().isInterrupted())
             {
                 out.output("AuctionClientTCPHandlerThread is running..", 3);
                 try {
                     
-                    op  = new Operation(this.client);
+                    
                     msg = op.readString();
                     messaging.add(msg);
                     
                 } catch (OperationException ex) {
-                   out.output("AuctionClientTCPHandlerThread: OperationException",2);
+                   out.output("AuctionClientTCPHandlerThread "+id+": OperationException",2);
                    Thread.currentThread().interrupt();
                   
                 }
             }
-            out.output("AuctionClientTCPHandlerThread finished..", 3);
+            out.output("AuctionClientTCPHandlerThread finished "+id, 3);
             
         } 
     }
