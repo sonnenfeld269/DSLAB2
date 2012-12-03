@@ -1,7 +1,7 @@
 
 import MyLogger.Log;
 import auctionmanagement.AuctionClientException;
-import auctionmanagement.AuctionTest;
+import LoadTest.AuctionTest;
 import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

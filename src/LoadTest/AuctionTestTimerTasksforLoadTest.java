@@ -2,8 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package auctionmanagement;
+package LoadTest;
 
+import auctionmanagement.Auction;
 import java.util.TimerTask;
 
 /**
