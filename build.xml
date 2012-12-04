@@ -1,121 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="dslab2" default="compile" basedir=".">
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="DSLAB2" default="default" basedir=".">
+    <description>Builds, tests, and runs the project DSLAB2.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
 
-    <property name="src.dir" value="src"/>
-    <property name="build.dir" value="build"/>
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
 
-    <!-- You need to update these properties!-->
-    <property name="server.name" value="AuctionServer"/><!-- Server's full class name (including the package) -->
-    <property name="server.host" value="localhost"/><!-- Auction Server's host -->
-    <property name="client.name" value="AuctionClient"/><!-- Bidding Client's full class name (including the package) -->
-    <property name="client1.port" value="17801"/><!-- UDP port of 1st Bidding Client -->
-    <property name="client2.port" value="17802"/><!-- UDP port of 2nd Bidding Client -->
-    <property name="client3.port" value="17803"/><!-- UDP port of 3rd Bidding Client -->
-    <property name="mgmtclient.name" value="ManagementClient"/><!-- Management Client's full class name (including the package) -->
-    <property name="analytics.name" value="AnalyticServer"/><!-- Analytics Server's full class name (including the package) -->
-    <property name="billing.name" value="BillingServer"/><!-- Billing Server's full class name (including the package) -->
-    <property name="analytics.bindingName" value="AnalyticsServerInterface"/><!-- RMI Binding Name of the Analytics Server -->
-    <property name="billing.bindingName" value="BillingsServerInterface"/><!-- RMI Binding Name of the Billing Server -->
-    <property name="server.port" value="14450"/><!-- TCP port -->
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
 
-    <path id="project.classpath">
-        <pathelement location="${build.dir}"/>
-    </path>
-    
-    <path id="project.classpath">
-    <pathelement location="${build.dir}"/>
-    <fileset dir="lib">
-         <include name="log4j-1.2.16.jar"/>
-    </fileset>
-</path>
-    
-    <target name="compile" description="Compile project.">
-        <mkdir dir="${build.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${build.dir}" classpathref="project.classpath" debug="true" deprecation="true" includeantruntime="false"/>
-        <copy todir="${build.dir}">
-            <fileset dir="${src.dir}">
-                <include name="*.properties"/>
-            </fileset>
-        </copy>
-    </target>
+    (Targets beginning with '-' are not intended to be called on their own.)
 
-    <target name="run-server" depends="compile" description="Run Auction Server.">
-        <java classname="${server.name}" fork="true" classpathref="project.classpath">
-            <arg value="${server.port}"/>
-            <arg value="${analytics.bindingName}"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
-    </target>
+    Example of inserting an obfuscator after compilation could look like this:
 
-    <target name="run-analytics-server" depends="compile" description="Run Analytics Server.">
-        <java classname="${analytics.name}" fork="true" classpathref="project.classpath">
-            <arg value="${analytics.bindingName}"/>
-        </java>
-    </target>
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
 
-    <target name="run-billing-server" depends="compile" description="Run Billing Server.">
-        <java classname="${billing.name}" fork="true" classpathref="project.classpath">
-            <arg value="${billing.bindingName}"/>
-        </java>
-    </target>
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
 
-    <target name="run-client1" depends="compile" description="Run 1st Client.">
-        <java classname="${client.name}" fork="true" classpathref="project.classpath">
-            <arg value="${server.host}"/>
-            <arg value="${server.port}"/>
-            <arg value="${client1.port}"/>
-        </java>
-    </target>
 
-    <target name="run-client2" depends="compile" description="Run 2nd Client.">
-        <java classname="${client.name}" fork="true" classpathref="project.classpath">
-            <arg value="${server.host}"/>
-            <arg value="${server.port}"/>
-            <arg value="${client2.port}"/>
-        </java>
-    </target>
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
 
-    <target name="run-client3" depends="compile" description="Run 3rd Client.">
-        <java classname="${client.name}" fork="true" classpathref="project.classpath">
-            <arg value="${server.host}"/>
-            <arg value="${server.port}"/>
-            <arg value="${client3.port}"/>
-        </java>
-    </target>
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
 
-    <target name="run-mgmtclient1" depends="compile" description="Run Management Client 1.">
-        <java classname="${mgmtclient.name}" fork="true" classpathref="project.classpath">
-            <arg value="${analytics.bindingName}"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
-    </target>
+    An example of overriding the target for project execution could look like this:
 
-    <target name="run-mgmtclient2" depends="compile" description="Run Management Client 2.">
-        <java classname="${mgmtclient.name}" fork="true" classpathref="project.classpath">
-            <arg value="${analytics.bindingName}"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
-    </target>
+        <target name="run" depends="DSLAB2-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
 
-    <target name="run-mgmtclient3" depends="compile" description="Run Management Client 3.">
-        <java classname="${mgmtclient.name}" fork="true" classpathref="project.classpath">
-            <arg value="${analytics.bindingName}"/>
-            <arg value="${billing.bindingName}"/>
-        </java>
-    </target>
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
 
-    <target name="run-loadtest" depends="compile" description="Run Load Test.">
-        <java classname="${client.name}" fork="true" classpathref="project.classpath">
-            <arg value="${server.host}"/>
-            <arg value="${server.port}"/>
-            <arg value="${analytics.bindingName}"/>
-        </java>
-    </target>
-
-    <target name="clean" description="Clean project.">
-        <delete dir="${build.dir}"/>
-    </target>
-
-    <target name="rebuild" depends="clean, compile" description="Clean and build project."/>
+    -->
 </project>
-
