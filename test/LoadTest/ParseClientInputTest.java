@@ -31,7 +31,7 @@ public class ParseClientInputTest {
        //create Auctions
        for(long i=0;i<numberAuctions;i++)
        {
-           Auction a = new Auction(("client"+i),(time.getTime()+(i*60000)),("description "+i));
+           Auction a = new Auction(("client"+i),(i*60),("description"+i));
            map.put(i, a);
        }
     }

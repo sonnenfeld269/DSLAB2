@@ -71,16 +71,16 @@ public  class ParseClientInput {
                     String[] splitted = s.split(" ");
                     String owner = splitted[2];
                     if (!owner.equals(clientOwner)) {
-                        String highestBidder = splitted[splitted.length-2];
-                        double highestBid = Double.parseDouble(splitted[splitted.length-1]);
+                        String highestBidder = splitted[splitted.length-1];
+                        double highestBid = Double.parseDouble(splitted[splitted.length-2]);
                         long id = Long.parseLong(splitted[0].replace(".", ""));
                         String description = splitted[1].substring(1,splitted[1].lastIndexOf('\''));
                         int positionbeforeDate=(s.indexOf(splitted[2]))+(splitted[2].length()+1);
                         int positionafterDate=(s.indexOf(splitted[splitted.length-3])+splitted[splitted.length-3].length());
                         Date date=null;
-                        String Date=s.substring(positionafterDate, positionafterDate);
+                        String Date_=s.substring(positionbeforeDate, positionafterDate);
 
-                        date=DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).parse(Date);
+                        date=DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).parse(Date_);
                         long expires = date.getTime()-(new Date()).getTime();
                         if(expires>0)
                         {
