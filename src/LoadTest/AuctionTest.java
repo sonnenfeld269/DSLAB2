@@ -96,7 +96,6 @@ public class AuctionTest
                  logger.output("AuctionTest:run:Create AuctionTestClient "+i+".",2);
                  auctionclient[i]= new AuctionTestClient(i,host,
                         port,
-                        AnalyticBindingName,
                         prop,                   
                         pool,
                         logger);
@@ -129,7 +128,8 @@ public class AuctionTest
                     {
                         logger.output("AuctionTest:run:finally:"
                                 +"Close auctionclient "+j+".",3);
-                        auctionclient[j].close();
+                        auctionclient[j].notify();
+                        //wakes up the client to proceed to death
                     }
                 }
                     

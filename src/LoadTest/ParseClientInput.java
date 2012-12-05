@@ -5,62 +5,100 @@
 package LoadTest;
 
 import auctionmanagement.Auction;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author Dave
  */
-public class ParseClientInput {
+public  class ParseClientInput {
 
     /*
      * Parse Methods
      */
-    public boolean parseLogin(String message) {
+    public static boolean parseLogin(String message) {
         if (message.contains("Succesfully logged in")) {
             return true;
         }
         return false;
     }
 
-    public boolean parseLogout(String message) {
+    public static boolean parseLogout(String message) {
         if (message.contains("Succesfully logged out")) {
             return true;
         }
         return false;
     }
 
-    public boolean parseCreate(String message) {
+    public static boolean parseCreate(String message) {
         if (message.contains("has been created")) {
             return true;
         }
         return false;
     }
 
-    public boolean parseBid(String message) {
+    public static boolean parseBid(String message) {
         if (message.contains("You succesfully bid")) {
             return true;
         }
         return false;
     }
 
-    // 0. 'description' Owner 22.3.2012 667.8 HighesBidder
-    public HashMap<Long, Auction> parseList(String message, String clientOwner) {
+    
+    /*
+     * Example: <ungeordnet aich möglich>
+     * 0. 'firstAuction' alice Wed Dec 05 00:05:37 CET 2012 0.0 none
+     * 2. 'thirdAcution' alice Wed Dec 05 00:05:55 CET 2012 0.0 none
+     * 1. 'secondAuction' alice Wed Dec 05 00:05:46 CET 2012 0.0 none 
+     *      
+     */
+    public  static  HashMap<Long, Auction> parseList(String message, String clientOwner) {
+        if(message.isEmpty())
+            return null;
+        
+        
         if (message.contains(".") && message.contains("'")) {
-            System.out.println("DEBUG: Insided parseList");
+            
             String[] listItems = message.split("\n");
             HashMap<Long, Auction> list = new HashMap<Long, Auction>();
             for (String s : listItems) {
-                System.out.println("DEBUG: Insided loop");
-                String[] splitted = s.split(" ");
-                System.out.println("DEBUG: List Item contains: " + splitted[0] + " : " + splitted[1] + " : " + splitted[2] + " : " + splitted[3] + " : " + splitted[4] + " : " + splitted[5] + " : ");
-                String owner = splitted[2];
-                if (!owner.equals(clientOwner)) {
-                    System.out.println("DEBUG: Owner of auction is not clientOwner.");
-                    Auction a = new Auction(owner, Long.parseLong(splitted[3]), splitted[2]);
-                    list.put(Long.parseLong(splitted[0].replace(".", "")), a); //Hier nimmt er sich die Long id aus dem String (zB 0. und macht draus eine 0)
-                    System.out.println("DEBUG: Put auction with ID " + a.getID() + " into list success!");
+                try {
+                    String[] splitted = s.split(" ");
+                    String owner = splitted[2];
+                    if (!owner.equals(clientOwner)) {
+                        String highestBidder = splitted[splitted.length-2];
+                        double highestBid = Double.parseDouble(splitted[splitted.length-1]);
+                        long id = Long.parseLong(splitted[0].replace(".", ""));
+                        String description = splitted[1].substring(1,splitted[1].lastIndexOf('\''));
+                        int positionbeforeDate=(s.indexOf(splitted[2]))+(splitted[2].length()+1);
+                        int positionafterDate=(s.indexOf(splitted[splitted.length-3])+splitted[splitted.length-3].length());
+                        Date date=null;
+                        String Date=s.substring(positionafterDate, positionafterDate);
+
+                        date=DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).parse(Date);
+                        long expires = date.getTime()-(new Date()).getTime();
+                        if(expires>0)
+                        {
+                            Auction a = new Auction(owner, expires, description);
+                            a.setnewBid(owner, id);
+                            list.put(id, a); 
+                        }
+                    }
+                    
+                    
+                } catch (ParseException ex) {
+                    return null;
+                }catch (NumberFormatException ex) {
+                    return null;
                 }
+               
+                
+                
             }
             return list;
         }
