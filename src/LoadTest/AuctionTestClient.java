@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +37,9 @@ public class AuctionTestClient implements Runnable {
     private HashMap<Long, Auction> activeForeignAuctions=null;
     private ReentrantLock lockforactiveForeignAuctions=null;
 
+    private AuctionTestClient.WaitingRoom waiting=null;
+    
+    
     private Timer timer=null;
    
 
@@ -59,6 +63,9 @@ public class AuctionTestClient implements Runnable {
             this.activeForeignAuctions=new HashMap<Long, Auction>();
             this.lockforactiveForeignAuctions=new ReentrantLock();
             
+            waiting=new AuctionTestClient.WaitingRoom(logger);
+            
+            
             
             pool.execute(handleTCP);
             logger.output("Client "+id+" is starting his AuctionTCPHandlerForAuctiontest.",3);
@@ -68,11 +75,17 @@ public class AuctionTestClient implements Runnable {
             throw (new AuctionTestClientException("id:" + id + ":Exception:", e));
         }
     }
+    
+    public AuctionTestClient.WaitingRoom getWaitingRoom()
+    {
+        return this.waiting; 
+    }
+    
 
     public void run() {
         try {
             logger.output("Client "+id+" is running.",3);
-            timer = new Timer();
+            timer = new Timer(true);
             AuctionTestTimerTasksforLoadTest.PerMinuteTask minuteTask=null;
             AuctionTestTimerTasksforLoadTest.UpdateListTask updateTask=null;
             
@@ -83,7 +96,7 @@ public class AuctionTestClient implements Runnable {
                     properties,
                     activeForeignAuctions,                         
                     lockforactiveForeignAuctions,
-                    this,       
+                    waiting,
                     logger       
                     );
             updateTask=new AuctionTestTimerTasksforLoadTest.UpdateListTask(
@@ -92,7 +105,7 @@ public class AuctionTestClient implements Runnable {
                     ("client"+id),
                     activeForeignAuctions,
                     lockforactiveForeignAuctions,//for mutual exclusion   
-                    this,
+                    waiting,
                     logger
                     );
             /**********************Login*******************/
@@ -108,12 +121,13 @@ public class AuctionTestClient implements Runnable {
             //START TIMER
             timer.scheduleAtFixedRate(updateTask, 0, properties.updateIntervalSec*1000);
             timer.scheduleAtFixedRate(minuteTask, 0, 60000);
+          
             logger.output("Client "+id+" registered all schedules.",3);
             //Thread waites for notification from outside
             logger.output("Client "+id+" is wating to be closed.",3);
             /**********************waiting*******************/
-            this.wait();
             
+            this.waiting.enterWaitingRoom();            
            
             /**********************Logout*******************/
             op.writeString("!logout");
@@ -183,9 +197,9 @@ public class AuctionTestClient implements Runnable {
                 out.output("AuctionClientTCPHandlerThread " + id + ": OperationException");
                 Thread.currentThread().interrupt();
             }
-
+            out.output("AuctionClientTCPHandlerThread is running..", 3);
             while (!Thread.currentThread().isInterrupted()) {
-                out.output("AuctionClientTCPHandlerThread is running..", 3);
+               
                 try {
 
 
@@ -201,5 +215,49 @@ public class AuctionTestClient implements Runnable {
             out.output("AuctionClientTCPHandlerThread finished " + id, 3);
 
         }
+    }
+    
+    /*
+     * A Thread can enter the waiting Room and will be suspended.
+     * Only one Thread can enter the room.
+     * Every other Thread can remove a thread from this room.
+     * The suspended Thread is going in active mode.
+     */
+    public  class WaitingRoom
+    {
+        private boolean iswaiting;
+        private Log logger=null;
+        
+        public WaitingRoom(Log logger)
+        {
+            this.iswaiting=false;
+            this.logger=logger;
+        }
+        
+        public synchronized void enterWaitingRoom()
+        {
+            if(!this.iswaiting)
+                this.iswaiting=true;
+            logger.output("AuctionTestClient:WaitingRoom:Client "+id+" enters waiting room.", 2);
+            try {
+                this.wait();
+            } catch (InterruptedException ex) {
+               
+            }
+            logger.output("AuctionTestClient:WaitingRoom:Client "+id+" exits the waiting room.", 2);
+        }
+        
+        
+        public synchronized void callingfromWaitingRoom()
+        {
+            if(this.iswaiting)
+            {
+                this.iswaiting=false;
+                this.notify();
+                logger.output("AuctionTestClient:WaitingRoom:Client "+id+" will be removed from Waiting Room.", 2);
+            }
+        }
+        
+        
     }
 }

@@ -7,8 +7,10 @@ package LoadTest;
 import auctionmanagement.Auction;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,15 +79,17 @@ public  class ParseClientInput {
                         String description = splitted[1].substring(1,splitted[1].lastIndexOf('\''));
                         int positionbeforeDate=(s.indexOf(splitted[2]))+(splitted[2].length()+1);
                         int positionafterDate=(s.indexOf(splitted[splitted.length-3])+splitted[splitted.length-3].length());
+                        // extract date
                         Date date=null;
                         String Date_=s.substring(positionbeforeDate, positionafterDate);
-
-                        date=DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).parse(Date_);
-                        long expires = date.getTime()-(new Date()).getTime();
+                        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.GERMAN );
+                        date=df.parse(Date_);
+                        long timenow = new Date().getTime();
+                        long expires = (date.getTime()-timenow)/1000;
                         if(expires>0)
                         {
                             Auction a = new Auction(owner, expires, description);
-                            a.setnewBid(owner, id);
+                            a.setnewBid(highestBidder, highestBid);
                             list.put(id, a); 
                         }
                     }
