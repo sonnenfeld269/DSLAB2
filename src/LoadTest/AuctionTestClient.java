@@ -112,7 +112,7 @@ public class AuctionTestClient implements Runnable {
             //start registration of the client at the AuctionServer
             Operation op = new Operation(this.clientTCP);
             //udpPort will be set to a fake
-            op.writeString("!login" +" "+("client"+id)+" "+0);
+            op.writeString("!login" +" "+("client"+id)+" "+0);//udpPort=0
             if(!ParseClientInput.parseLogin(this.messaging.take()))
                 throw new Exception("Cannot login to AuctionServer.");
             logger.output("Client "+id+" logged succesfully to the AuctionServer.",2);
@@ -130,7 +130,7 @@ public class AuctionTestClient implements Runnable {
             this.waiting.enterWaitingRoom();            
            
             /**********************Logout*******************/
-            op.writeString("!logout");
+            op.writeString("!logout"+" "+"client"+id);
             if(!ParseClientInput.parseLogout(this.messaging.take()))
                 throw new Exception("Logout of client unsuccesfully.");
             

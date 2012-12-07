@@ -72,7 +72,7 @@ public  class AuctionTestTimerTasksforLoadTest {
                 this.lockforactiveForeignAuctions.lock();
                 Operation op = new Operation(this.clientTCP);
                 //Timeunit in milliseconds
-                long waitTime = 600L;//wait 200ms for messages and then continue
+                long waitTime = 6000L;//wait 200ms for messages and then continue
               
                 //CREATE #'auctionsPerMin' auctions every minute
                 for(int i=0;i<this.properties.auctionsPerMin;i++)
@@ -80,15 +80,15 @@ public  class AuctionTestTimerTasksforLoadTest {
                      op.writeString("!create"+" "+this.clientname+" "
                              +this.properties.auctionDuration+" "
                              +("Auction "+auctioncounter+" of "+this.clientname));
-                     //String s=this.messaging.poll(waitTime, TimeUnit.MILLISECONDS);
-                     String s=this.messaging.take();
+                     String s=this.messaging.poll(waitTime, TimeUnit.MILLISECONDS);
+                     //String s=this.messaging.take();
                      if(s==null)
                          throw new Exception("No response from AuctionServer.");
                      if(!ParseClientInput.parseCreate(s))
                          throw new Exception("Client cannot crate a Auction.");
                      
-                     logger.output(this.clientname+":PerMinuteTask:Created the"
-                             +auctioncounter+" Auction.",2);
+                     logger.output(this.clientname+":PerMinuteTask:Created the "
+                             +auctioncounter+". Auction.",2);
                      auctioncounter++;
                      
                 }
@@ -210,11 +210,11 @@ public  class AuctionTestTimerTasksforLoadTest {
                 Operation op = new Operation(this.clientTCP);
                 op.writeString("!list");
                  //Timeunit in milliseconds
-                long waitTime = 500L;//wait 200ms for messages and then continue
+                long waitTime = 5000L;//wait 200ms for messages and then continue
                 
                 
-                //String s=this.messaging.poll(waitTime, TimeUnit.MILLISECONDS);
-                String s=this.messaging.take();
+                String s=this.messaging.poll(waitTime, TimeUnit.MILLISECONDS);
+                //String s=this.messaging.take();
                 if(s==null)
                       throw new Exception("No response from AuctionServer.");
                 HashMap<Long, Auction>  newmap =ParseClientInput.parseList(s, clientname) ;
@@ -234,7 +234,7 @@ public  class AuctionTestTimerTasksforLoadTest {
                
             }catch(InterruptedException ex)   
             {
-               logger.output(this.clientname+":UpdateListTask:OperationException:"+ex.getMessage()); 
+               logger.output(this.clientname+":UpdateListTask:InterruptedException:"+ex.getMessage()); 
                this.waiting.callingfromWaitingRoom();
                
             }catch(Exception ex)   

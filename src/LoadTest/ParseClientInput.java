@@ -54,10 +54,16 @@ public  class ParseClientInput {
     
     /*
      * Example: <ungeordnet aich möglich>
-     * 0. 'firstAuction' alice Wed Dec 05 00:05:37 CET 2012 0.0 none
-     * 2. 'thirdAcution' alice Wed Dec 05 00:05:55 CET 2012 0.0 none
-     * 1. 'secondAuction' alice Wed Dec 05 00:05:46 CET 2012 0.0 none 
-     *      
+     *  15. 'zweite auktion der welt' marko 07.12.2012 02:16:03 0.0 none
+     *  14. 'erste auktion der welt' marko 07.12.2012 02:14:11 0.0 none 
+     *                             ||    |          |        |   |    | 
+ splitted2[0]       splitted2[1]            splitted2[2]  
+ *                       splitted3[0]
+ *                             splitted3[1]
+ *                                        splitted3[2]
+ *                                                splitted3[3]
+ *                                                     splitted3[4]
+ *                                                          splitted3[5]
      */
     public  static  HashMap<Long, Auction> parseList(String message, String clientOwner) {
         if(message.isEmpty())
@@ -70,18 +76,22 @@ public  class ParseClientInput {
             HashMap<Long, Auction> list = new HashMap<Long, Auction>();
             for (String s : listItems) {
                 try {
-                    String[] splitted = s.split(" ");
-                    String owner = splitted[2];
+                    //String[] splitted = s.split(" ");
+                    String[] splitted2 = s.split("\'");
+                    String[] splitted3=splitted2[2].split(" ");
+                    String owner = splitted3[1];
                     if (!owner.equals(clientOwner)) {
-                        String highestBidder = splitted[splitted.length-1];
-                        double highestBid = Double.parseDouble(splitted[splitted.length-2]);
-                        long id = Long.parseLong(splitted[0].replace(".", ""));
-                        String description = splitted[1].substring(1,splitted[1].lastIndexOf('\''));
-                        int positionbeforeDate=(s.indexOf(splitted[2]))+(splitted[2].length()+1);
-                        int positionafterDate=(s.indexOf(splitted[splitted.length-3])+splitted[splitted.length-3].length());
+                        String highestBidder = splitted3[5];
+                        double highestBid = Double.parseDouble(splitted3[4]);
+                        long id = Long.parseLong(splitted2[0].replace(". ", ""));
+                        //String description = s.substring(s.indexOf('\'', 0),s.lastIndexOf('\''));
+                        String description=splitted2[1];
+                       // int positionbeforeDate=(s.indexOf(splitted[2]))+(splitted[2].length()+1);
+                       // int positionafterDate=(s.indexOf(splitted[splitted.length-3])+splitted[splitted.length-3].length());
                         // extract date
                         Date date=null;
-                        String Date_=s.substring(positionbeforeDate, positionafterDate);
+                       //String Date_=s.substring(positionbeforeDate, positionafterDate);
+                        String Date_= splitted3[2]+" "+ splitted3[3];
                         DateFormat df = DateFormat.getDateTimeInstance( DateFormat.MEDIUM, DateFormat.MEDIUM, Locale.GERMAN );
                         date=df.parse(Date_);
                         long timenow = new Date().getTime();

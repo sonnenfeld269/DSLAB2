@@ -31,7 +31,7 @@ public class LoadTest {
             
             AuctionTest Test=null;
             
-            Log logger=new Log(new PrintWriter(System.out),3); 
+            Log logger=new Log(new PrintWriter(System.out)); 
             
             
             if(args.length==3)

@@ -329,10 +329,10 @@ public class AuctionManagementSystem implements Runnable {
                         }
 
                         list.setCharAt(list.length() - 1, ' ');
-                        Answer a = new Answer(list.toString(), this.commandtask.list.client);
-
-                        outgoingmessagechannel.offer(a);
+                        
                     }
+                    Answer a = new Answer(list.toString(), this.commandtask.list.client);
+                    outgoingmessagechannel.offer(a);
                 } catch (Exception e) {
                     logger.output("AMSHandlerThread:list:Exception:" + e.getMessage());
                 }

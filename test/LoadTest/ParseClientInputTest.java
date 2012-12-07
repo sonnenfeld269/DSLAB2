@@ -74,7 +74,7 @@ public class ParseClientInputTest {
         HashMap<Long,Auction> map_=new HashMap<Long,Auction>();
         for(long i=1;i!=numberAuctions;i++)
        {
-           Auction a = new Auction(("client"+i),(i*60),("description"+i));
+           Auction a = new Auction(("client"+i),(i*60),("description"+i+" of the "+i +" auction."));
            map_.put(i, a);
        }
         
