@@ -90,7 +90,7 @@ public class AuctionTest
         ManagementClientForLoadTest managementclient=null;
         managementclient=new ManagementClientForLoadTest("./src/registry.properties",
                 this.AnalyticBindingName,controlManagementClientLock);
-        pool.execute(managementclient);
+        //pool.execute(managementclient);
        
         
         int i=0;

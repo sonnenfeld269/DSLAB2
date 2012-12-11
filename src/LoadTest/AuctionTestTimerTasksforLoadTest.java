@@ -12,6 +12,7 @@ import communication.OperationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TimerTask;
@@ -72,7 +73,7 @@ public  class AuctionTestTimerTasksforLoadTest {
                 this.lockforactiveForeignAuctions.lock();
                 Operation op = new Operation(this.clientTCP);
                 //Timeunit in milliseconds
-                long waitTime = 6000L;//wait 200ms for messages and then continue
+                long waitTime = 6000L;//wait 6s for messages and then continue
               
                 //CREATE #'auctionsPerMin' auctions every minute
                 for(int i=0;i<this.properties.auctionsPerMin;i++)
@@ -95,6 +96,7 @@ public  class AuctionTestTimerTasksforLoadTest {
                 
                 //BID on #'bidsPerMin' Auction every minute
                 int activeAuctionSize=this.activeForeignAuctions.size();
+                logger.output(this.clientname+":PerMinuteTask:number of Auctions is "+activeAuctionSize,3);
                 if(activeAuctionSize>0)
                 {
                     Random random=new Random();
@@ -103,35 +105,61 @@ public  class AuctionTestTimerTasksforLoadTest {
                     for(int i=0;i<this.properties.bidsPerMin;i++)
                     {
                        int select = random.nextInt(activeAuctionSize);
+                       Auction a =null;
+                       int j=0;
+                       long id;
+                       Iterator<Map.Entry<Long,Auction>> iter = activeForeignAuctions.entrySet().iterator();
+                       while(iter.hasNext()&&(j<select))
+                       {
+                          iter.next();
+                          j++;
+                       }
                        //the key of activeForeignAuctions map is the correct AuctionID
                        //and the same AuctionId of corresponding Auction at the AuctionServer
                        //the "intern" id auf class Auction is "NOT" the same Id of the AuctionID
                        //at the AuctionServer
                        
-                       Auction a =(Auction)(this.activeForeignAuctions.get((long)select));
-                       long timenow=(new Date()).getTime();
-                       long auctionstarttime=a.getstartDateObject().getTime();
-                       double newBid=(double)(timenow-auctionstarttime);
+                      // Auction a =(Auction)(this.activeForeignAuctions.get(key));
                        
-                       op.writeString("!bid"    +" "
-                             +this.clientname   +" "
-                             +select            +" "
-                             +newBid);
-                        String s=this.messaging.poll(waitTime, TimeUnit.MILLISECONDS);
-                        if(s==null)
-                            throw new Exception("No response from AuctionServer.");
-                        if(!ParseClientInput.parseBid(s)){
-                            logger.output(this.clientname+":PerMinuteTask"
-                                    +":Bid of "+newBid
-                                    +"on Auction ID "+select
-                                    +"was not successfully.");
-                        }
-                        
-                        logger.output(this.clientname+":PerMinuteTask:"
-                                +"Set Bid on Auction ID "
-                                +select
-                                +" with "
-                                +newBid+".",2);
+                       if(iter.hasNext())        
+                       {
+                           Entry<Long,Auction> e =iter.next();
+                           a =e.getValue();
+                           id=e.getKey().longValue();
+                           
+                          
+                       }else
+                       {
+                           throw new Exception("Failure in parsing active Auctions. ");
+                       }
+                       
+                      // long timenow=(new Date()).getTime();
+                       long timenow=System.currentTimeMillis();
+                       if(a!=null)
+                       {
+                           long auctionstarttime=a.getstartDateObject().getTime();
+                           double newBid=(double)(timenow-auctionstarttime);
+                           String m="!bid"                  +" "
+                                 +this.clientname           +" "
+                                 +id                        +" "
+                                 +newBid;
+                           op.writeString(m);
+                            String s=this.messaging.poll(waitTime, TimeUnit.MILLISECONDS);
+                            if(s==null)
+                                throw new Exception("No response from AuctionServer.");
+                            if(!ParseClientInput.parseBid(s)){
+                                logger.output(this.clientname+":PerMinuteTask"
+                                        +":Bid of "+newBid
+                                        +" on Auction ID "+id
+                                        +" was not successfully.");
+                            }else
+
+                                logger.output(this.clientname+":PerMinuteTask:"
+                                        +"Set Bid on Auction ID "
+                                        +id
+                                        +" with "
+                                        +newBid+".",2);
+                       }
 
                     }
                 }
@@ -146,12 +174,12 @@ public  class AuctionTestTimerTasksforLoadTest {
                
             }catch(InterruptedException ex)   
             {
-               logger.output(this.clientname+":PerMinuteTask:OperationException:"+ex.getMessage()); 
+               logger.output(this.clientname+":PerMinuteTask:InterruptedException:"+ex.getMessage()); 
                this.waiting.callingfromWaitingRoom();
                
             }catch(Exception ex)   
             {
-               logger.output(this.clientname+":PerMinuteTask:OperationException:"+ex.getMessage()); 
+               logger.output(this.clientname+":PerMinuteTask:Exception:"+ex.getMessage()); 
                this.waiting.callingfromWaitingRoom();
                
             }finally
@@ -210,7 +238,7 @@ public  class AuctionTestTimerTasksforLoadTest {
                 Operation op = new Operation(this.clientTCP);
                 op.writeString("!list");
                  //Timeunit in milliseconds
-                long waitTime = 5000L;//wait 200ms for messages and then continue
+                long waitTime = 5000L;//wait 5s for messages and then continue
                 
                 
                 String s=this.messaging.poll(waitTime, TimeUnit.MILLISECONDS);
@@ -221,6 +249,8 @@ public  class AuctionTestTimerTasksforLoadTest {
                 if(newmap!=null)
                 {
                     this.activeForeignAuctions.clear();
+                    logger.output("A new Auction List inserted for "+this.clientname
+                            +" with size of "+newmap.size()+" auctions.",3);
                     this.activeForeignAuctions.putAll(newmap);
                 }else{
                     logger.output(this.clientname+":UpdateListTask:No Auctions avaible.",2);
